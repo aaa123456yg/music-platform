@@ -1,21 +1,25 @@
-/* 全域設定 */
+/* =========================================
+   1. 全域設定 (Global Styles)
+   ========================================= */
 body {
-    background-color: #121212; /* Spotify 深黑色背景 */
+    background-color: #121212; /* Spotify 深色背景 */
     color: #FFFFFF;
-    font-family: 'Roboto', sans-serif, system-ui;
+    font-family: 'Roboto', sans-serif, system-ui, -apple-system, BlinkMacSystemFont;
     margin: 0;
     padding: 0;
     display: flex;
     justify-content: center; /* 水平置中 */
     align-items: center;     /* 垂直置中 */
-    min-height: 100vh;
+    min-height: 100vh;       /* 佔滿整個視窗高度 */
 }
 
-/* 登入容器 */
+/* =========================================
+   2. 登入容器佈局 (Layout)
+   ========================================= */
 .login-wrapper {
     width: 100%;
-    max-width: 450px; /* 限制寬度 */
-    padding: 20px;
+    max-width: 450px; /* 限制最大寬度，讓在大螢幕上不會太寬 */
+    padding: 30px;
 }
 
 .login-container {
@@ -25,105 +29,67 @@ body {
 /* 標題樣式 (歡迎回來) */
 .text-center {
     text-align: center;
-    font-size: 3rem; /* 大字體 */
+    font-size: 3rem; /* 大標題 */
     font-weight: 700;
     margin-bottom: 40px;
     letter-spacing: -1px;
 }
 
-/* Step 2 的頂部導覽列 */
-.step2-header {
-    display: flex;
-    align-items: center;
+/* =========================================
+   3. 輸入框樣式 (Inputs)
+   ========================================= */
+.input-group {
     margin-bottom: 20px;
+    text-align: left;
 }
 
-.step-title {
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: #ffffff;
-}
-
-/* 返回按鈕 */
-.back-btn {
-    background: none;
-    border: none;
-    color: #b3b3b3;
-    cursor: pointer;
-    padding: 0;
-    margin-right: 20px;
-    display: flex;
-    align-items: center;
-}
-.back-btn:hover {
-    color: #ffffff;
-}
-
-/* 輸入框標籤 */
 label {
     display: block;
     font-size: 0.875rem;
     font-weight: 700;
     margin-bottom: 8px;
-    margin-top: 10px;
 }
 
-/* 輸入框樣式 */
 input[type="text"],
 input[type="password"] {
     width: 100%;
     padding: 14px;
-    background-color: #121212;
-    border: 1px solid #727272;
+    background-color: #121212; /* 輸入框背景色 */
+    border: 1px solid #727272; /* 灰色邊框 */
     border-radius: 4px;
     color: white;
     font-size: 1rem;
-    box-sizing: border-box;
+    box-sizing: border-box; /* 確保 padding 不會撐大寬度 */
     transition: border-color 0.2s;
 }
 
-/* 點擊輸入框時的高亮 */
+/* 點擊輸入框時的高亮效果 (白框) */
 input:focus {
     outline: 2px solid #FFFFFF;
     border-color: transparent;
 }
 
-/* 錯誤訊息 */
-.error-msg {
-    color: #e91429;
-    font-size: 0.875rem;
-    margin-top: 5px;
-    display: none;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-}
-/* 用 JS 控制顯示 */
-#email-error { display: none; }
-
-/* 綠色按鈕 */
-.btn-primary {
-    width: 100%;
-    background-color: #1ed760;
-    color: #000000;
-    font-weight: 700;
-    font-size: 1rem;
-    padding: 14px;
-    border: none;
-    border-radius: 500px;
-    cursor: pointer;
-    margin-top: 30px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: transform 0.1s, background-color 0.2s;
+/* ★★★ 修復 Chrome 自動填入變成白底的問題 ★★★ */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #121212 inset !important;
+    -webkit-text-fill-color: white !important;
+    transition: background-color 5000s ease-in-out 0s;
 }
 
-.btn-primary:hover {
-    background-color: #1fdf64;
-    transform: scale(1.02);
+/* 唯讀輸入框 (Step 2 的 Email 顯示) */
+input[readonly] {
+    background-color: #121212; 
+    border: 1px solid #727272;
+    color: #FFFFFF;
+    cursor: default;
 }
 
-/* 密碼框的包裝 (為了放眼睛按鈕) */
+/* =========================================
+   4. 密碼區塊與眼睛按鈕 (Password Toggle)
+   ========================================= */
 .password-wrapper {
     position: relative;
     width: 100%;
@@ -144,6 +110,67 @@ input:focus {
 }
 
 .toggle-password:hover {
+    color: #ffffff;
+}
+
+/* =========================================
+   5. 按鈕樣式 (Buttons)
+   ========================================= */
+.btn-primary {
+    width: 100%;
+    background-color: #1ed760; /* Spotify 經典綠 */
+    color: #000000;            /* 按鈕文字黑色 */
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 14px;
+    border: none;
+    border-radius: 500px;      /* 藥丸形狀 */
+    cursor: pointer;
+    margin-top: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: transform 0.1s, background-color 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #1fdf64; /* 滑鼠移上去變亮 */
+    transform: scale(1.02);    /* 微微放大 */
+}
+
+/* 返回按鈕 (Step 2 左上角箭頭) */
+.back-btn {
+    background: none;
+    border: none;
+    color: #b3b3b3;
+    cursor: pointer;
+    padding: 0;
+    margin-right: 20px;
+    display: flex;
+    align-items: center;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    justify-content: center;
+}
+
+.back-btn:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* =========================================
+   6. 輔助文字與連結 (Links & Headers)
+   ========================================= */
+/* Step 2 的頂部導覽列 */
+.step2-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.step-title {
+    font-weight: 700;
+    font-size: 1rem;
     color: #ffffff;
 }
 
@@ -168,4 +195,44 @@ input:focus {
 .footer-link a:hover {
     text-decoration: underline;
     color: #1ed760;
+}
+
+/* 前端驗證錯誤訊息 (輸入框下方的紅字) */
+.error-msg {
+    color: #e91429;
+    font-size: 0.875rem;
+    margin-top: 5px;
+    display: none;
+    font-weight: 700;
+}
+
+/* =========================================
+   7. 錯誤提示框 (Alert Box) - 強制樣式
+   ========================================= */
+/* 使用更高權重的選擇器，並加上 !important 確保顏色正確 */
+div.alert.alert-danger {
+    display: flex !important;
+    align-items: center !important;
+    padding: 12px 16px !important;
+    margin-bottom: 24px !important;
+    font-size: 0.9rem !important;
+    line-height: 1.5 !important;
+    
+    /* 這裡就是關鍵的紅色背景 */
+    background-color: #e91429 !important; 
+    
+    /* 文字顏色為白色 */
+    color: #ffffff !important;
+    
+    /* 確保沒有圓角或極小圓角 */
+    border-radius: 2px !important;
+}
+
+/* 錯誤提示框內的圖示顏色 */
+div.alert.alert-danger svg {
+    flex-shrink: 0;
+    margin-right: 12px;
+    fill: #ffffff !important;
+    width: 20px;
+    height: 20px;
 }

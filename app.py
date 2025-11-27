@@ -14,7 +14,7 @@ app.config['SECRET_KEY'] = 'your_secret_key_here'
 
 # 設定資料庫連線 (這裡使用 SQLite 方便測試，如果要用 MySQL 請改連線字串)
 # MySQL 範例: 'mysql+pymysql://帳號:密碼@localhost/MusicPlatform'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///music.db' 
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost:3306/MusicPlatform' 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # 初始化擴充套件
@@ -134,27 +134,32 @@ def index():
         return redirect(url_for('login'))
 
 
+# app.py
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
 
+    # 初始化變數
+    error = False
+    email_value = ''
+
     if request.method == 'POST':
-        email = request.form.get('email')
+        email_value = request.form.get('email', '')
         password = request.form.get('password')
 
-        # 查詢使用者
-        user = User.query.filter_by(email=email).first()
+        user = User.query.filter_by(email=email_value).first()
 
-        # 驗證密碼
         if user and check_password_hash(user.password_hash, password):
             login_user(user)
-            flash('登入成功！', 'success')
             return redirect(url_for('index'))
         else:
-            flash('登入失敗，請檢查信箱或密碼。', 'danger')
+            # 登入失敗：設定錯誤旗標
+            error = True
+            flash('用戶名稱或密碼不正確。', 'danger')
 
-    return render_template('login.html')
+    # 將 error 和 email_value 傳給前端
+    return render_template('login.html', error=error, email_value=email_value)
 
 
 @app.route('/logout')

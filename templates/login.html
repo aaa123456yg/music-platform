@@ -4,15 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>登入 - MusicPlatform</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=6">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
     <div class="login-wrapper">
-        
         <div class="login-container">
-            
             <form action="/login" method="POST" id="loginForm">
 
                 <section id="step-1">
@@ -20,7 +18,7 @@
 
                     <div class="input-group">
                         <label for="email">電子信箱或使用者名稱</label>
-                        <input type="text" id="email" name="email" placeholder="電子信箱或使用者名稱" required>
+                        <input type="text" id="email" name="email" value="{{ email_value }}" placeholder="電子信箱或使用者名稱" required>
                         <div id="email-error" class="error-msg">請輸入電子信箱或使用者名稱。</div>
                     </div>
 
@@ -42,9 +40,24 @@
                         <span class="step-title">使用密碼登入</span>
                     </header>
 
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                      {% if messages %}
+                        {% for category, message in messages %}
+                          {% if category == 'danger' %}
+                            <div id="backend-alert" class="alert alert-danger">
+                                <svg height="24" width="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
+                                </svg>
+                                <span>{{ message }}</span>
+                            </div>
+                          {% endif %}
+                        {% endfor %}
+                      {% endif %}
+                    {% endwith %}
+
                     <div class="input-group">
                         <label for="email-display">電子信箱或使用者名稱</label>
-                        <input type="text" id="email-display" readonly>
+                        <input type="text" id="email-display" value="{{ email_value }}" readonly>
                     </div>
 
                     <div class="input-group">
@@ -75,18 +88,33 @@
         const passwordInput = document.getElementById('password');
         const emailError = document.getElementById('email-error');
 
+        const errorFlag = "{{ 'true' if error else 'false' }}"; 
+        
+        if (errorFlag === 'true') {
+            step1.style.display = 'none';
+            step2.style.display = 'block';
+            passwordInput.setAttribute('required', 'required');
+        }
+
+        // ★★★ 修改這裡：使用 remove() ★★★
+        function clearBackendError() {
+            const alertBox = document.getElementById('backend-alert');
+            if (alertBox) {
+                alertBox.remove(); // 徹底刪除，不只是隱藏
+            }
+        }
+
         function goToStep2() {
-            // 驗證是否為空
             if (emailInput.value.trim() === "") {
                 emailError.style.display = 'block';
                 emailInput.style.borderColor = '#e91429';
                 return;
             }
-            // 清除錯誤
             emailError.style.display = 'none';
             emailInput.style.borderColor = '#727272';
 
-            // 複製值並切換
+            clearBackendError(); // 切換時刪除舊錯誤
+
             emailDisplay.value = emailInput.value;
             step1.style.display = 'none';
             step2.style.display = 'block';
@@ -94,6 +122,8 @@
         }
 
         function goBackToStep1() {
+            clearBackendError(); // 切換時刪除舊錯誤
+
             step2.style.display = 'none';
             step1.style.display = 'block';
             passwordInput.removeAttribute('required');
@@ -110,6 +140,5 @@
             }
         }
     </script>
-
 </body>
 </html>
