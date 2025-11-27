@@ -162,11 +162,12 @@ def login():
     return render_template('login.html', error=error, email_value=email_value)
 
 
+# 確認 app.py 有這一段
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
-    flash('您已登出。', 'info')
+    flash('您已登出。', 'info') # 登出後會回到登入頁顯示這行
     return redirect(url_for('login'))
 
 
