@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登入 - MusicPlatform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="login-wrapper">
+        
+        <div class="login-container">
+            
+            <form action="/login" method="POST" id="loginForm">
+
+                <section id="step-1">
+                    <h1 class="text-center">歡迎回來</h1>
+
+                    <div class="input-group">
+                        <label for="email">電子信箱或使用者名稱</label>
+                        <input type="text" id="email" name="email" placeholder="電子信箱或使用者名稱" required>
+                        <div id="email-error" class="error-msg">請輸入電子信箱或使用者名稱。</div>
+                    </div>
+
+                    <button type="button" class="btn-primary" onclick="goToStep2()">繼續</button>
+
+                    <div class="footer-link">
+                        <p>尚未註冊帳戶？ <a href="/register">註冊</a></p>
+                    </div>
+                </section>
+
+                <section id="step-2" style="display: none;">
+                    
+                    <header class="step2-header">
+                        <button type="button" class="back-btn" onclick="goBackToStep1()" aria-label="返回">
+                            <svg role="img" height="24" width="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M15.54 21.15L5.42 12l10.12-9.15 1.63 1.69-8.06 7.46 8.06 7.46-1.63 1.69z"></path>
+                            </svg>
+                        </button>
+                        <span class="step-title">使用密碼登入</span>
+                    </header>
+
+                    <div class="input-group">
+                        <label for="email-display">電子信箱或使用者名稱</label>
+                        <input type="text" id="email-display" readonly>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="password">密碼</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="password" name="password">
+                            <button type="button" class="toggle-password" onclick="togglePassword()">
+                                <svg id="eye-icon" height="24" width="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 5c-7.633 0-9.927 6.617-9.948 6.684L1.946 12l.105.316C2.073 12.383 4.367 19 12 19s9.927-6.617 9.948-6.684l.106-.316-.105-.316C21.927 11.617 19.633 5 12 5zm0 12c-5.351 0-7.424-3.846-7.926-5C4.576 10.846 6.649 7 12 7s7.424 3.846 7.926 5c-.502 1.154-2.574 5-7.926 5z"></path>
+                                    <path d="M12 10a2 2 0 100 4 2 2 0 000-4z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary">登入</button>
+                </section>
+
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const step1 = document.getElementById('step-1');
+        const step2 = document.getElementById('step-2');
+        const emailInput = document.getElementById('email');
+        const emailDisplay = document.getElementById('email-display');
+        const passwordInput = document.getElementById('password');
+        const emailError = document.getElementById('email-error');
+
+        function goToStep2() {
+            // 驗證是否為空
+            if (emailInput.value.trim() === "") {
+                emailError.style.display = 'block';
+                emailInput.style.borderColor = '#e91429';
+                return;
+            }
+            // 清除錯誤
+            emailError.style.display = 'none';
+            emailInput.style.borderColor = '#727272';
+
+            // 複製值並切換
+            emailDisplay.value = emailInput.value;
+            step1.style.display = 'none';
+            step2.style.display = 'block';
+            passwordInput.setAttribute('required', 'required');
+        }
+
+        function goBackToStep1() {
+            step2.style.display = 'none';
+            step1.style.display = 'block';
+            passwordInput.removeAttribute('required');
+        }
+
+        function togglePassword() {
+            const eyeIcon = document.getElementById("eye-icon");
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                eyeIcon.style.opacity = "0.5";
+            } else {
+                passwordInput.type = "password";
+                eyeIcon.style.opacity = "1";
+            }
+        }
+    </script>
+
+</body>
+</html>

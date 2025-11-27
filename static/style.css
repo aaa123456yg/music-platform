@@ -1,0 +1,171 @@
+/* 全域設定 */
+body {
+    background-color: #121212; /* Spotify 深黑色背景 */
+    color: #FFFFFF;
+    font-family: 'Roboto', sans-serif, system-ui;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center; /* 水平置中 */
+    align-items: center;     /* 垂直置中 */
+    min-height: 100vh;
+}
+
+/* 登入容器 */
+.login-wrapper {
+    width: 100%;
+    max-width: 450px; /* 限制寬度 */
+    padding: 20px;
+}
+
+.login-container {
+    width: 100%;
+}
+
+/* 標題樣式 (歡迎回來) */
+.text-center {
+    text-align: center;
+    font-size: 3rem; /* 大字體 */
+    font-weight: 700;
+    margin-bottom: 40px;
+    letter-spacing: -1px;
+}
+
+/* Step 2 的頂部導覽列 */
+.step2-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.step-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #ffffff;
+}
+
+/* 返回按鈕 */
+.back-btn {
+    background: none;
+    border: none;
+    color: #b3b3b3;
+    cursor: pointer;
+    padding: 0;
+    margin-right: 20px;
+    display: flex;
+    align-items: center;
+}
+.back-btn:hover {
+    color: #ffffff;
+}
+
+/* 輸入框標籤 */
+label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    margin-top: 10px;
+}
+
+/* 輸入框樣式 */
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 14px;
+    background-color: #121212;
+    border: 1px solid #727272;
+    border-radius: 4px;
+    color: white;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+/* 點擊輸入框時的高亮 */
+input:focus {
+    outline: 2px solid #FFFFFF;
+    border-color: transparent;
+}
+
+/* 錯誤訊息 */
+.error-msg {
+    color: #e91429;
+    font-size: 0.875rem;
+    margin-top: 5px;
+    display: none;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+}
+/* 用 JS 控制顯示 */
+#email-error { display: none; }
+
+/* 綠色按鈕 */
+.btn-primary {
+    width: 100%;
+    background-color: #1ed760;
+    color: #000000;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 14px;
+    border: none;
+    border-radius: 500px;
+    cursor: pointer;
+    margin-top: 30px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: transform 0.1s, background-color 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #1fdf64;
+    transform: scale(1.02);
+}
+
+/* 密碼框的包裝 (為了放眼睛按鈕) */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #b3b3b3;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+}
+
+.toggle-password:hover {
+    color: #ffffff;
+}
+
+/* 底部註冊連結 */
+.footer-link {
+    margin-top: 40px;
+    text-align: center;
+    border-top: 1px solid #292929;
+    padding-top: 20px;
+}
+
+.footer-link p {
+    color: #a7a7a7;
+}
+
+.footer-link a {
+    color: #FFFFFF;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.footer-link a:hover {
+    text-decoration: underline;
+    color: #1ed760;
+}
