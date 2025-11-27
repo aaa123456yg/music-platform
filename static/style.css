@@ -570,3 +570,31 @@ body.main-body {
     color: #b3b3b3;
     z-index: 200;
 }
+/* --- 成功訊息提示框 (綠色) --- */
+/* 這是給 flash('...', 'success') 用的樣式 */
+div.alert.alert-success {
+    display: flex !important;
+    align-items: center !important;
+    padding: 12px 16px !important;
+    margin-bottom: 24px !important;
+    font-size: 0.9rem !important;
+    line-height: 1.5 !important;
+    
+    /* 使用 Spotify 綠色背景 */
+    background-color: #1ed760 !important; 
+    
+    /* 為了在亮綠色上看得清楚，文字用黑色 */
+    color: #000000 !important;
+    font-weight: 700 !important; /* 加粗比較好看 */
+    
+    border-radius: 2px !important;
+}
+
+/* 成功框內的圖示顏色 (黑色) */
+div.alert.alert-success svg {
+    flex-shrink: 0;
+    margin-right: 12px;
+    fill: #000000 !important;
+    width: 20px;
+    height: 20px;
+}

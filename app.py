@@ -171,6 +171,7 @@ def logout():
     return redirect(url_for('login'))
 
 
+# app.py 的 register 路由
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
@@ -181,23 +182,25 @@ def register():
         password = request.form.get('password')
         display_name = request.form.get('display_name')
 
-        # 檢查 Email 是否重複
         if User.query.filter_by(email=email).first():
             flash('此 Email 已經註冊過了。', 'warning')
             return redirect(url_for('register'))
 
-        # 建立新使用者
         hashed_password = generate_password_hash(password)
         new_user = User(email=email, password_hash=hashed_password, display_name=display_name)
         
         db.session.add(new_user)
         db.session.commit()
 
-        flash('註冊成功！請登入。', 'success')
-        return redirect(url_for('login'))
+        # ★★★ 修改這裡 ★★★
+        # 1. 確保訊息類別是 'success' (對應綠色框)
+        flash('註冊成功！你可以直接登入或繼續註冊其他帳號。', 'success')
+        
+        # 2. 關鍵：把 'login' 改成 'register'
+        # 這樣才會重新載入註冊頁面，並顯示上方的成功訊息
+        return redirect(url_for('register')) 
 
-    return render_template('register.html') # 需自行建立 register.html
-
+    return render_template('register.html')
 # --- 啟動程式 ---
 if __name__ == '__main__':
     # 建立資料庫表格 (第一次執行時需要)
