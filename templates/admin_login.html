@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>後台登入 - MusicPlatform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=10">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="login-container">
+            <h1 class="text-center">員工專用入口</h1>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="alert alert-{{ category }}"><span>{{ message }}</span></div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <form action="/admin/login" method="POST">
+                <div class="input-group">
+                    <label>員工編號 (eId)</label>
+                    <input type="text" name="eid" placeholder="例如：E001" required>
+                </div>
+                <div class="input-group">
+                    <label>員工密碼</label>
+                    <input type="password" name="password" required>
+                </div>
+                <button type="submit" class="btn-primary">進入管理系統</button>
+            </form>
+            
+            <div class="footer-link">
+                <a href="/">回到前台首頁</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

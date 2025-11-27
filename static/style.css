@@ -598,3 +598,77 @@ div.alert.alert-success svg {
     width: 20px;
     height: 20px;
 }
+/* 這是給之後 <img> 標籤用的樣式 */
+.card-img {
+    width: 100%;
+    aspect-ratio: 1/1;        /* 強制維持 1:1 正方形比例 */
+    object-fit: cover;        /* ★★★ 關鍵：自動裁切填滿，不會變形 ★★★ */
+    border-radius: 4px;       /* 圓角 */
+    margin-bottom: 16px;
+    background-color: #333;   /* 圖片載入前的底色 */
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+/* =========================================
+   搜尋結果頁與歌曲列表樣式
+   ========================================= */
+.result-section {
+    margin-bottom: 40px;
+}
+
+.result-section h3 {
+    font-size: 1.5rem;
+    margin-bottom: 16px;
+    font-weight: 700;
+}
+
+/* 歌曲列表 Table 樣式 */
+.song-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    color: #b3b3b3;
+}
+
+.song-table th {
+    text-align: left;
+    border-bottom: 1px solid #282828;
+    padding: 8px 12px;
+    font-weight: normal;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+}
+
+.song-table td {
+    padding: 12px;
+    vertical-align: middle;
+}
+
+.song-table tr:hover {
+    background-color: #2a2a2a; /* 滑鼠移過變色 */
+    border-radius: 4px;
+}
+
+.song-table tr:hover .song-name {
+    color: #ffffff;
+}
+
+.song-name {
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 500;
+    display: block;
+}
+
+/* 圓形的演出者圖片 placeholder */
+.rounded-circle {
+    border-radius: 50% !important;
+}
+
+.like-btn {
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.like-btn:hover {
+    color: #1ed760;
+}

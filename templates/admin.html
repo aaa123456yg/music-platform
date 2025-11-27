@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>後台管理 - MusicPlatform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=11">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* 後台專用樣式 */
+        body {
+            /* 確保背景色一致 */
+            background-color: #121212;
+            color: white;
+            align-items: flex-start; /* 讓內容從上面開始，不要垂直置中 */
+            padding-top: 20px;
+        }
+
+        .admin-container { 
+            width: 100%;
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+
+        /* ★★★ 修正 1：頂部排版 (Flexbox) ★★★ */
+        .admin-header { 
+            display: flex; 
+            justify-content: space-between; /* 一左一右 */
+            align-items: center;            /* 垂直置中 */
+            margin-bottom: 40px; 
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+
+        .admin-header h1 {
+            margin: 0;
+            font-size: 2rem;
+            white-space: nowrap; /* 強制標題不換行 */
+        }
+
+        /* ★★★ 修正 2：登出按鈕樣式 (覆蓋原本的寬度) ★★★ */
+        .logout-btn {
+            background-color: #1ed760;
+            color: #000;
+            font-weight: 700;
+            padding: 10px 24px;
+            border-radius: 500px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            /* 關鍵：取消 100% 寬度，改為自動寬度 */
+            width: auto !important; 
+            display: inline-block;
+        }
+        .logout-btn:hover {
+            background-color: #1fdf64;
+            transform: scale(1.05);
+        }
+
+        /* 表單區塊 */
+        .form-section { 
+            background-color: #181818; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 30px; 
+        }
+        
+        .form-section h2 { 
+            margin-top: 0; 
+            color: #1ed760; 
+            border-bottom: 1px solid #333; 
+            padding-bottom: 10px; 
+            margin-bottom: 20px;
+        }
+
+        .form-row { 
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 15px; 
+        }
+
+        .form-control { 
+            flex: 1; 
+            background: #282828; 
+            border: 1px solid #444; 
+            color: white; 
+            padding: 10px; 
+            border-radius: 4px; 
+            font-family: inherit;
+        }
+        
+        select.form-control { cursor: pointer; }
+
+        /* 讓輸入框 focus 時有白框 */
+        .form-control:focus {
+            outline: 2px solid #fff;
+            border-color: transparent;
+        }
+
+        /* ★★★ 修正 3：日期輸入框強制英文 ★★★ */
+        /* 透過 filter 把預設圖示變白 */
+        input[type="date"] {
+            color-scheme: dark;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        
+        <div class="admin-header">
+            <h1>後台管理系統</h1>
+            <a href="/admin/logout" class="logout-btn">登出</a>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}"><span>{{ message }}</span></div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="form-section">
+            <h2>1. 新增演出者</h2>
+            <form action="/admin/add_artist" method="POST" enctype="multipart/form-data">
+                <div class="form-row">
+                    <input type="text" name="name" class="form-control" placeholder="演出者名稱 (例如: 周杰倫)" required>
+                </div>
+                <div class="form-row">
+                    <input type="text" name="bio" class="form-control" placeholder="簡介">
+                </div>
+                <div class="form-row">
+                    <label style="align-self: center; white-space: nowrap;">演出者照片：</label>
+                    <input type="file" name="artist_file" class="form-control" accept="image/*">
+                </div>
+                <button type="submit" class="btn-primary">新增演出者</button>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h2>2. 新增專輯</h2>
+            <form action="/admin/add_album" method="POST" enctype="multipart/form-data">
+                <div class="form-row">
+                    <input type="text" name="title" class="form-control" placeholder="專輯名稱" required>
+                    <select name="artist_id" class="form-control" required>
+                        <option value="" disabled selected>選擇演出者...</option>
+                        {% for artist in artists %}
+                            <option value="{{ artist.artist_id }}">{{ artist.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label style="align-self: center; white-space: nowrap;">發行日期：</label>
+                    <input type="date" name="release_date" class="form-control" lang="en">
+                </div>
+                <div class="form-row">
+                    <label style="align-self: center; white-space: nowrap;">專輯封面：</label>
+                    <input type="file" name="cover_file" class="form-control" accept="image/*" required>
+                </div>
+                <button type="submit" class="btn-primary">新增專輯</button>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h2>3. 上架歌曲 (MP3)</h2>
+            <form action="/admin/add_song" method="POST" enctype="multipart/form-data">
+                <div class="form-row">
+                    <input type="text" name="title" class="form-control" placeholder="歌曲名稱" required>
+                    <select name="album_id" class="form-control" required>
+                        <option value="" disabled selected>選擇所屬專輯...</option>
+                        {% for album in albums %}
+                            <option value="{{ album.album_id }}">{{ album.title }} ({{ album.artist.name }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-row">
+                    <input type="number" name="duration_minutes" class="form-control" placeholder="分" min="0">
+                    <input type="number" name="duration_seconds" class="form-control" placeholder="秒" min="0" max="59">
+                </div>
+                <div class="form-row">
+                    <label style="align-self: center; white-space: nowrap;">上傳音檔 (MP3)：</label>
+                    <input type="file" name="audio_file" class="form-control" accept=".mp3, .wav" required>
+                </div>
+                <button type="submit" class="btn-primary">上架歌曲</button>
+            </form>
+        </div>
+
+    </div>
+</body>
+</html>

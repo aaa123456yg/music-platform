@@ -1,4 +1,5 @@
 import os
+from werkzeug.utils import secure_filename
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
@@ -16,6 +17,11 @@ app.config['SECRET_KEY'] = 'your_secret_key_here'
 # MySQL 範例: 'mysql+pymysql://帳號:密碼@localhost/MusicPlatform'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost:3306/MusicPlatform' 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# 設定上傳存檔路徑
+app.config['UPLOAD_FOLDER'] = os.path.join(app.static_folder, 'music')
+app.config['COVER_FOLDER'] = os.path.join(app.static_folder, 'covers')
+app.config['ARTIST_FOLDER'] = os.path.join(app.static_folder, 'artists') # ★ 新增這行
+app.config['ALLOWED_EXTENSIONS'] = {'mp3', 'wav', 'ogg', 'png', 'jpg', 'jpeg'}
 
 # 初始化擴充套件
 db = SQLAlchemy(app)
@@ -89,6 +95,12 @@ class Album(db.Model):
 
     songs = db.relationship('Song', backref='album', lazy=True)
 
+class Employees(db.Model):
+    __tablename__ = 'employees'
+    eId = db.Column(db.String(10), primary_key=True)
+    e_name = db.Column(db.String(20), nullable=False)
+    e_password = db.Column(db.String(20), nullable=False)
+
 class Song(db.Model):
     __tablename__ = 'songs'
     song_id = db.Column(db.Integer, primary_key=True)
@@ -133,7 +145,23 @@ def index():
         # 未登入，導向登入頁 (或是顯示 Landing Page)
         return redirect(url_for('login'))
 
+# app.py 新增搜尋路由
 
+@app.route('/search')
+@login_required
+def search():
+    q = request.args.get('q', '') # 取得網址上的 ?q=關鍵字
+    
+    if not q:
+        return redirect(url_for('index'))
+
+    # 使用 ilike 進行模糊搜尋 (不分大小寫)
+    # 搜尋 歌曲、專輯、演出者
+    songs = Song.query.filter(Song.title.ilike(f'%{q}%')).all()
+    albums = Album.query.filter(Album.title.ilike(f'%{q}%')).all()
+    artists = Artist.query.filter(Artist.name.ilike(f'%{q}%')).all()
+
+    return render_template('search_results.html', q=q, songs=songs, albums=albums, artists=artists)
 # app.py
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -201,6 +229,156 @@ def register():
         return redirect(url_for('register')) 
 
     return render_template('register.html')
+# --- 後台管理系統路由 ---
+
+# 1. 後台登入
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        eid = request.form.get('eid')
+        password = request.form.get('password')
+        
+        # 查詢員工表 (因為是後台，這裡直接明文比對示範，實際專案建議也要加密)
+        employee = Employees.query.filter_by(eId=eid).first()
+        
+        if employee and employee.e_password == password:
+            # 使用 Session 記住管理員登入狀態 (與一般 User 分開)
+            from flask import session
+            session['admin_id'] = employee.eId
+            return redirect(url_for('admin_dashboard'))
+        else:
+            flash('管理員帳號或密碼錯誤', 'danger')
+            
+    return render_template('admin_login.html')
+
+# 2. 後台儀表板 (上架頁面)
+@app.route('/admin/dashboard')
+def admin_dashboard():
+    from flask import session
+    if 'admin_id' not in session:
+        return redirect(url_for('admin_login'))
+    
+    # 撈出所有演出者與專輯，供下拉選單使用
+    artists = Artist.query.all()
+    albums = Album.query.all()
+    
+    return render_template('admin.html', artists=artists, albums=albums)
+
+# 3. 新增演出者功能
+# app.py 更新版 add_artist 路由
+
+@app.route('/admin/add_artist', methods=['POST'])
+def add_artist():
+    name = request.form.get('name')
+    bio = request.form.get('bio')
+    
+    # 處理演出者照片上傳
+    image_path = None # 預設為空 (如果沒上傳就留空)
+    
+    if 'artist_file' in request.files:
+        file = request.files['artist_file']
+        if file.filename != '':
+            filename = secure_filename(file.filename)
+            # 存到 static/artists/ 資料夾
+            file.save(os.path.join(app.config['ARTIST_FOLDER'], filename))
+            # 記錄路徑
+            image_path = f'/static/artists/{filename}'
+    
+    # 寫入資料庫 (加入 artist_image_url)
+    new_artist = Artist(name=name, bio=bio, artist_image_url=image_path)
+    db.session.add(new_artist)
+    db.session.commit()
+    
+    flash(f'演出者 {name} 新增成功！', 'success')
+    return redirect(url_for('admin_dashboard'))
+
+# app.py 更新版 add_album 路由
+
+@app.route('/admin/add_album', methods=['POST'])
+def add_album():
+    title = request.form.get('title')
+    artist_id = request.form.get('artist_id')
+    release_date_str = request.form.get('release_date')
+    
+    # 1. 處理日期
+    release_date = datetime.strptime(release_date_str, '%Y-%m-%d').date() if release_date_str else None
+    
+    # 2. 處理封面圖片上傳
+    cover_path = None # 預設為空
+    
+    if 'cover_file' in request.files:
+        file = request.files['cover_file']
+        if file.filename != '':
+            filename = secure_filename(file.filename)
+            # 存到 static/covers/ 資料夾
+            file.save(os.path.join(app.config['COVER_FOLDER'], filename))
+            # 記錄路徑供前端使用
+            cover_path = f'/static/covers/{filename}'
+
+    # 3. 寫入資料庫 (加入 cover_art_url)
+    new_album = Album(
+        title=title, 
+        artist_id=artist_id, 
+        release_date=release_date,
+        cover_art_url=cover_path  # ★★★ 這裡存入路徑 ★★★
+    )
+    db.session.add(new_album)
+    db.session.commit()
+    
+    flash(f'專輯 {title} 新增成功！', 'success')
+    return redirect(url_for('admin_dashboard'))
+
+# 5. 上架歌曲功能 (最重要！)
+@app.route('/admin/add_song', methods=['POST'])
+def add_song():
+    from flask import session
+    title = request.form.get('title')
+    album_id = request.form.get('album_id')
+    duration_m = request.form.get('duration_minutes')
+    duration_s = request.form.get('duration_seconds')
+    
+    # 處理檔案上傳
+    if 'audio_file' not in request.files:
+        flash('沒有上傳檔案', 'danger')
+        return redirect(url_for('admin_dashboard'))
+        
+    file = request.files['audio_file']
+    
+    if file.filename == '':
+        flash('未選擇檔案', 'danger')
+        return redirect(url_for('admin_dashboard'))
+
+    if file:
+        filename = secure_filename(file.filename)
+        # 存檔到 static/music/
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        
+        # 資料庫存的路徑 (給前端 <audio src="..."> 用的)
+        db_path = f'/static/music/{filename}'
+        
+        # 寫入資料庫
+        new_song = Song(
+            title=title,
+            album_id=album_id,
+            duration_minutes=duration_m,
+            duration_seconds=duration_s,
+            audio_file_url=db_path,
+            eId=session['admin_id'], # 記錄是誰上架的
+            upload_date=datetime.utcnow()
+        )
+        db.session.add(new_song)
+        db.session.commit()
+        
+        flash(f'歌曲 {title} 上架成功！', 'success')
+
+    return redirect(url_for('admin_dashboard'))
+
+# 6. 後台登出
+@app.route('/admin/logout')
+def admin_logout():
+    from flask import session
+    session.pop('admin_id', None)
+    return redirect(url_for('admin_login'))
 # --- 啟動程式 ---
 if __name__ == '__main__':
     # 建立資料庫表格 (第一次執行時需要)
