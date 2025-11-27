@@ -110,7 +110,10 @@ class Song(db.Model):
     duration_seconds = db.Column(db.Integer)
     album_id = db.Column(db.Integer, db.ForeignKey('albums.album_id'), nullable=False)
     
-    # 這裡簡化處理，若要完整功能可加上 upload_date 等
+    # ★★★ 補上這兩行 ★★★
+    eId = db.Column(db.String(10), db.ForeignKey('employees.eId'))
+    upload_date = db.Column(db.DateTime, default=datetime.utcnow)
+    # ★★★★★★★★★★★★★★★
 
     artists = db.relationship('Artist', secondary=song_artists, backref='songs')
 
@@ -136,13 +139,18 @@ def load_user(user_id):
 
 @app.route('/')
 def index():
-    # 首頁：顯示一些專輯或是歡迎訊息
     if current_user.is_authenticated:
-        # 如果已登入，顯示個人的歌單或推薦
-        recent_albums = Album.query.limit(5).all()
-        return render_template('index.html', albums=recent_albums) # 需自行建立 index.html
+        # ★★★ 修改這裡：從資料庫撈出真實專輯 ★★★
+        # 這裡示範撈出最新的 6 張專輯 (依 album_id 倒序排列)
+        recent_albums = Album.query.order_by(Album.album_id.desc()).limit(6).all()
+        
+        # 也可以順便撈出隨機推薦的演出者 (選用)
+        # import random
+        # all_artists = Artist.query.all()
+        # recommended_artists = random.sample(all_artists, min(len(all_artists), 5))
+
+        return render_template('index.html', albums=recent_albums) 
     else:
-        # 未登入，導向登入頁 (或是顯示 Landing Page)
         return redirect(url_for('login'))
 
 # app.py 新增搜尋路由
@@ -162,6 +170,21 @@ def search():
     artists = Artist.query.filter(Artist.name.ilike(f'%{q}%')).all()
 
     return render_template('search_results.html', q=q, songs=songs, albums=albums, artists=artists)
+
+# app.py 新增專輯詳情頁路由
+
+@app.route('/album/<int:album_id>')
+@login_required
+def album_detail(album_id):
+    # get_or_404 會自動處理「找不到專輯」的情況，顯示 404 錯誤頁
+    album = Album.query.get_or_404(album_id)
+    
+    # 計算總時長 (分鐘) - 這是個貼心的小功能
+    total_seconds = sum(s.duration_minutes * 60 + s.duration_seconds for s in album.songs)
+    total_duration = f"{total_seconds // 60} 分 {total_seconds % 60} 秒"
+
+    return render_template('album_detail.html', album=album, total_duration=total_duration)
+
 # app.py
 @app.route('/login', methods=['GET', 'POST'])
 def login():

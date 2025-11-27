@@ -672,3 +672,149 @@ div.alert.alert-success svg {
 .like-btn:hover {
     color: #1ed760;
 }
+/* =========================================
+   專輯詳情頁樣式 (Album Detail)
+   ========================================= */
+
+/* 頭部排版 (Flexbox) */
+.album-header {
+    display: flex;
+    align-items: flex-end; /* 文字靠下對齊 */
+    gap: 24px;
+    padding-bottom: 24px;
+}
+
+/* 大封面圖設定 */
+.album-cover-large {
+    width: 232px;
+    height: 232px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 60px rgba(0,0,0,0.5); /* 陰影讓它浮起來 */
+}
+
+.album-cover-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px; /* 這裡不用圓形，專輯通常是方形 */
+}
+
+.placeholder-large {
+    width: 100%;
+    height: 100%;
+    background-color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 5rem;
+    border-radius: 4px;
+}
+
+/* 專輯文字資訊 */
+.type-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.album-info h1 {
+    font-size: 4rem; /* 超大標題 */
+    margin: 8px 0;
+    line-height: 1;
+    font-weight: 900;
+}
+
+.meta-info {
+    font-size: 0.9rem;
+    color: #e0e0e0;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+}
+
+.artist-name-bold {
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.dot {
+    margin: 0 4px;
+    font-size: 0.8rem;
+}
+
+/* 操作按鈕區 (綠色播放鍵) */
+.action-bar {
+    padding: 24px 0;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.play-btn-large {
+    width: 56px;
+    height: 56px;
+    background-color: #1ed760;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #000;
+    cursor: pointer;
+    transition: transform 0.1s, background-color 0.1s;
+}
+
+.play-btn-large:hover {
+    transform: scale(1.05);
+    background-color: #1fdf64;
+}
+
+.action-icon {
+    background: none;
+    border: none;
+    color: #b3b3b3;
+    font-size: 2rem;
+    cursor: pointer;
+}
+.action-icon:hover {
+    color: #ffffff;
+}
+
+/* 歌曲列表微調 */
+.song-row {
+    height: 56px; /* 增加行高 */
+    cursor: default;
+}
+
+.song-row:hover {
+    background-color: rgba(255,255,255,0.1); /* hover 效果 */
+}
+
+/* 序號與播放圖示切換效果 */
+.song-index {
+    position: relative;
+    text-align: center;
+    color: #b3b3b3;
+}
+
+.index-play-icon {
+    display: none; /* 預設隱藏播放圖示 */
+    color: #ffffff;
+    font-size: 0.8rem;
+}
+
+/* hover 時：序號隱藏，播放圖示顯示 */
+.song-row:hover .index-num { display: none; }
+.song-row:hover .index-play-icon { display: inline-block; }
+
+.song-name-highlight {
+    color: #ffffff;
+    font-size: 1rem;
+    display: block;
+}
+
+.song-artist-sub {
+    color: #b3b3b3;
+    font-size: 0.85rem;
+}

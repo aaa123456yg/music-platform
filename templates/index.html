@@ -72,19 +72,26 @@
         </header>
 
         <div class="content-area">
-            <h1 class="welcome-text">早安</h1>
+            <h1 class="welcome-text">最新發行</h1>
             
             <div class="cards-container">
-                <div class="card">
-                    <div class="card-img-placeholder">🎵</div>
-                    <h3>熱門專輯</h3>
-                    <p>這是專輯介紹...</p>
+                {% for album in albums %}
+                <div class="card" onclick="window.location.href='/album/{{ album.album_id }}'">
+                    
+                    {% if album.cover_art_url %}
+                        <img src="{{ album.cover_art_url }}" class="card-img" alt="{{ album.title }}">
+                    {% else %}
+                        <div class="card-img-placeholder">🎵</div>
+                    {% endif %}
+                    
+                    <h3>{{ album.title }}</h3>
+                    
+                    <p>{{ album.artist.name }}</p>
                 </div>
-                <div class="card">
-                    <div class="card-img-placeholder">🎸</div>
-                    <h3>搖滾精選</h3>
-                    <p>最佳搖滾音樂...</p>
-                </div>
+                {% endfor %}
+                {% if not albums %}
+                    <p style="color: #b3b3b3;">目前還沒有上架任何專輯。</p>
+                {% endif %}
             </div>
         </div>
 
