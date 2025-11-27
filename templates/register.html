@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>註冊 - MusicPlatform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="login-wrapper">
+        
+        <header class="step2-header">
+            <a href="/login" class="back-btn" aria-label="返回登入">
+                <svg role="img" height="24" width="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M15.54 21.15L5.42 12l10.12-9.15 1.63 1.69-8.06 7.46 8.06 7.46-1.63 1.69z"></path>
+                </svg>
+            </a>
+            <span class="step-title">註冊帳戶</span>
+        </header>
+
+        <div class="login-container">
+            
+            <h1 class="text-center" style="font-size: 2rem; margin-bottom: 20px;">免費註冊開始收聽</h1>
+
+            <form action="/register" method="POST" id="registerForm">
+
+                <div class="input-group">
+                    <label for="email">你的電子信箱是什麼？</label>
+                    <input type="text" id="email" name="email" placeholder="輸入電子信箱" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="password">建立密碼</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" name="password" placeholder="建立密碼" required>
+                        <button type="button" class="toggle-password" onclick="togglePassword()">
+                            <svg id="eye-icon" height="24" width="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 5c-7.633 0-9.927 6.617-9.948 6.684L1.946 12l.105.316C2.073 12.383 4.367 19 12 19s9.927-6.617 9.948-6.684l.106-.316-.105-.316C21.927 11.617 19.633 5 12 5zm0 12c-5.351 0-7.424-3.846-7.926-5C4.576 10.846 6.649 7 12 7s7.424 3.846 7.926 5c-.502 1.154-2.574 5-7.926 5z"></path>
+                                <path d="M12 10a2 2 0 100 4 2 2 0 000-4z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="display_name">我們該如何稱呼你？</label>
+                    <input type="text" id="display_name" name="display_name" placeholder="輸入個人檔案名稱" required>
+                    <div style="font-size: 0.75rem; color: #b3b3b3; margin-top: 5px;">這會顯示在你的個人檔案中。</div>
+                </div>
+
+                <button type="submit" class="btn-primary">註冊</button>
+
+            </form>
+
+            <div class="footer-link">
+                <p>已經有帳戶了嗎？ <a href="/login">在這裡登入</a></p>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById("password");
+            const eyeIcon = document.getElementById("eye-icon");
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                eyeIcon.style.opacity = "0.5";
+            } else {
+                passwordInput.type = "password";
+                eyeIcon.style.opacity = "1";
+            }
+        }
+    </script>
+
+</body>
+</html>
