@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ album.title }} - MusicPlatform</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=14">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=25">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
@@ -16,25 +16,16 @@
         <nav class="side-nav">
             <ul>
                 <li>
-                    <a  href="#"
-                        hx-get="/"
-                        hx-target=".content-area" 
-                        hx-select=".content-area"
-                        hx-swap="outerHTML"
-                        hx-push-url="true">
+                    <a href="/" hx-get="/" hx-target=".main-content" hx-select=".main-content" hx-swap="outerHTML" hx-push-url="true">
                         <i class="fa-solid fa-house"></i> 首頁
                     </a>
                 </li>
                 <li>
-                    <a  href="#" 
-                        hx-get="/search" 
-                        hx-target=".content-area" 
-                        hx-select=".content-area" 
-                        hx-swap="outerHTML"
-                        hx-push-url="true">
+                    <a href="/search" hx-get="/search" hx-target=".main-content" hx-select=".main-content" hx-swap="outerHTML" hx-push-url="true">
                         <i class="fa-solid fa-magnifying-glass"></i> 搜尋
                     </a>
                 </li>
+                <li><a href="#"><i class="fa-solid fa-book"></i> 你的資料庫</a></li>
             </ul>
         </nav>
         <div class="playlist-section">
@@ -45,110 +36,9 @@
         </div>
     </div>
 
-    <div class="main-content">
-        
-        <header class="top-bar">
-            <div class="nav-buttons">
-                <a href="/" 
-                   class="circle-btn" 
-                   title="回首頁"
-                   hx-get="/" 
-                   hx-target=".content-area" 
-                   hx-select=".content-area" 
-                   hx-swap="outerHTML"
-                   hx-push-url="true">
-                    <i class="fa-solid fa-chevron-left"></i>
-                </a>
-                
-                <a href="#" class="circle-btn" title="下一頁">
-                    <i class="fa-solid fa-chevron-right"></i>
-                </a>
-            </div>
-            <div class="user-menu-container">
-                <button class="user-btn" onclick="toggleDropdown()">
-                    <div class="avatar-circle"><i class="fa-solid fa-user"></i></div>
-                    <span class="username">{{ current_user.display_name }}</span>
-                    <i class="fa-solid fa-caret-down"></i>
-                </button>
-                <div id="userDropdown" class="dropdown-content">
-                    <a href="#" class="dropdown-item">個人檔案</a>
-                    <div class="divider"></div>
-                    <a href="/logout" class="dropdown-item">登出</a>
-                </div>
-            </div>
-        </header>
-
-        <div class="content-area">
-            
-            <div class="album-header">
-                <div class="album-cover-large">
-                    {% if album.cover_art_url %}
-                        <img src="{{ album.cover_art_url }}" alt="{{ album.title }}">
-                    {% else %}
-                        <div class="placeholder-large">🎵</div>
-                    {% endif %}
-                </div>
-                <div class="album-info">
-                    <span class="type-label">專輯</span>
-                    <h1>{{ album.title }}</h1>
-                    <div class="meta-info">
-                        <span class="artist-name-bold">{{ album.artist.name }}</span>
-                        <span class="dot">•</span>
-                        <span>{{ album.release_date.year if album.release_date else '未知年份' }}</span>
-                        <span class="dot">•</span>
-                        <span>{{ album.songs|length }} 首歌曲，{{ total_duration }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="action-bar">
-                <button class="play-btn-large" onclick="playFirstSong()"><i class="fa-solid fa-play"></i></button>
-                <button class="action-icon"><i class="fa-regular fa-heart"></i></button>
-                <button class="action-icon"><i class="fa-solid fa-ellipsis"></i></button>
-            </div>
-
-            <table class="song-table">
-                <thead>
-                    <tr>
-                        <th style="width: 50px;">#</th>
-                        <th>標題</th>
-                        <th style="text-align: right;"><i class="fa-regular fa-clock"></i></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for song in album.songs %}
-                    <tr class="song-row" 
-                        onclick="playMusic('{{ song.audio_file_url }}', '{{ song.title }}', '{{ album.artist.name }}', '{{ album.cover_art_url }}')">
-                        
-                        <td class="song-index">
-                            <span class="index-num">{{ loop.index }}</span>
-                            <i class="fa-solid fa-play index-play-icon"></i>
-                        </td>
-                        <td>
-                            <div class="song-title-row">
-                                <span class="song-name-highlight">{{ song.title }}</span>
-                                <span class="song-artist-sub">{{ album.artist.name }}</span>
-                            </div>
-                        </td>
-                        <td style="text-align: right;">
-                            {{ song.duration_minutes }}:{{ '%02d' % song.duration_seconds }}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-
-            {% if not album.songs %}
-                <div style="padding: 40px; text-align: center; color: #b3b3b3;">
-                    <p>這張專輯還沒有上架任何歌曲。</p>
-                </div>
-            {% endif %}
-
-        </div>
-    </div>
+    {% include 'album_content.html' %}
 
     <div class="player-bar">
-        
         <div class="player-info">
             <img id="player-cover" src="" alt="" class="player-cover-img" style="display:none;">
             <div class="player-text">
@@ -156,37 +46,28 @@
                 <span id="player-artist" class="player-artist"></span>
             </div>
         </div>
-
         <div class="player-controls">
             <div class="control-buttons">
                 <button class="control-btn"><i class="fa-solid fa-shuffle"></i></button>
                 <button class="control-btn"><i class="fa-solid fa-backward-step"></i></button>
-                
-                <button class="control-btn play-pause-btn" onclick="togglePlay()">
-                    <i class="fa-solid fa-circle-play" id="main-play-icon"></i>
-                </button>
-                
+                <button class="control-btn play-pause-btn" onclick="togglePlay()"><i class="fa-solid fa-circle-play" id="main-play-icon"></i></button>
                 <button class="control-btn"><i class="fa-solid fa-forward-step"></i></button>
                 <button class="control-btn"><i class="fa-solid fa-repeat"></i></button>
             </div>
-
             <div class="progress-container">
                 <span id="current-time">0:00</span>
                 <input type="range" id="progress-bar" value="0" min="0" max="100" oninput="seekAudio()">
                 <span id="total-duration">0:00</span>
             </div>
         </div>
-
         <div class="player-volume">
             <i class="fa-solid fa-volume-high"></i>
             <input type="range" id="volume-bar" min="0" max="1" step="0.1" value="1" oninput="setVolume()">
         </div>
-
         <audio id="audio-player"></audio>
     </div>
 
     <script>
-        // 1. 下拉選單控制
         function toggleDropdown() { document.getElementById("userDropdown").classList.toggle("show"); }
         window.onclick = function(event) {
             if (!event.target.closest('.user-btn')) {
@@ -197,49 +78,34 @@
             }
         }
 
-        // 2. 音樂播放器邏輯
         const audioPlayer = document.getElementById('audio-player');
         const playIcon = document.getElementById('main-play-icon');
         const progressBar = document.getElementById('progress-bar');
         const currTimeDisplay = document.getElementById('current-time');
         const totTimeDisplay = document.getElementById('total-duration');
-        
-        // 介面元素
         const playerCover = document.getElementById('player-cover');
         const playerTitle = document.getElementById('player-title');
         const playerArtist = document.getElementById('player-artist');
 
-        // ★★★ 核心函式：播放指定歌曲 ★★★
         function playMusic(url, title, artist, coverUrl) {
-            // 設定音訊來源
             audioPlayer.src = url;
-            
-            // 更新介面文字與圖片
             playerTitle.innerText = title;
             playerArtist.innerText = artist;
-            
             if (coverUrl && coverUrl !== 'None') {
                 playerCover.src = coverUrl;
                 playerCover.style.display = 'block';
             } else {
                 playerCover.style.display = 'none';
             }
-
-            // 開始播放
             audioPlayer.play();
             updatePlayIcon(true);
         }
 
-        // 播放第一首歌 (給大綠色按鈕用的)
         function playFirstSong() {
-            // 找到列表中的第一行歌曲
             const firstRow = document.querySelector('.song-row');
-            if (firstRow) {
-                firstRow.click(); // 模擬點擊第一行
-            }
+            if (firstRow) firstRow.click();
         }
 
-        // 切換播放/暫停
         function togglePlay() {
             if (audioPlayer.paused) {
                 audioPlayer.play();
@@ -250,7 +116,6 @@
             }
         }
 
-        // 更新按鈕圖示 (Play vs Pause)
         function updatePlayIcon(isPlaying) {
             if (isPlaying) {
                 playIcon.classList.remove('fa-circle-play');
@@ -261,38 +126,30 @@
             }
         }
 
-        // 進度條更新 (當歌曲播放時)
         audioPlayer.ontimeupdate = function() {
             if (audioPlayer.duration) {
-                // 計算百分比
                 const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
                 progressBar.value = progress;
-
-                // 更新時間文字
                 currTimeDisplay.innerText = formatTime(audioPlayer.currentTime);
                 totTimeDisplay.innerText = formatTime(audioPlayer.duration);
             }
         };
 
-        // 使用者拖動進度條
         function seekAudio() {
             const seekTime = (progressBar.value / 100) * audioPlayer.duration;
             audioPlayer.currentTime = seekTime;
         }
 
-        // 音量控制
         function setVolume() {
             audioPlayer.volume = document.getElementById('volume-bar').value;
         }
 
-        // 時間格式化 (秒 -> 分:秒)
         function formatTime(seconds) {
             const min = Math.floor(seconds / 60);
             const sec = Math.floor(seconds % 60);
             return min + ":" + (sec < 10 ? "0" + sec : sec);
         }
         
-        // 當歌曲播完時，圖示變回播放
         audioPlayer.onended = function() {
             updatePlayIcon(false);
         };

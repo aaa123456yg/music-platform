@@ -1,0 +1,97 @@
+<div class="main-content">
+    
+    <header class="top-bar">
+        <div class="nav-buttons">
+            <a href="/" 
+               class="circle-btn" 
+               hx-get="/" 
+               hx-target=".main-content" 
+               hx-select=".main-content" 
+               hx-swap="outerHTML" 
+               hx-push-url="true">
+                <i class="fa-solid fa-chevron-left"></i>
+            </a>
+            <a href="#" class="circle-btn"><i class="fa-solid fa-chevron-right"></i></a>
+        </div>
+
+        <div class="search-container">
+            <form action="/search" method="GET" class="search-form"
+                  hx-get="/search" hx-target=".main-content" hx-select=".main-content" hx-push-url="true">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" name="q" placeholder="想播放什麼內容？" autocomplete="off">
+            </form>
+        </div>
+
+        <div class="user-menu-container">
+            <button class="user-btn" onclick="toggleDropdown()">
+                <div class="avatar-circle"><i class="fa-solid fa-user"></i></div>
+                <span class="username">{{ current_user.display_name }}</span>
+                <i class="fa-solid fa-caret-down"></i>
+            </button>
+            <div id="userDropdown" class="dropdown-content">
+                <a href="#" class="dropdown-item">個人檔案</a>
+                <div class="divider"></div>
+                <a href="/logout" class="dropdown-item">登出</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="content-area">
+        <div class="album-header">
+            <div class="album-cover-large">
+                {% if album.cover_art_url %}
+                    <img src="{{ album.cover_art_url }}" alt="{{ album.title }}">
+                {% else %}
+                    <div class="placeholder-large">🎵</div>
+                {% endif %}
+            </div>
+            <div class="album-info">
+                <span class="type-label">專輯</span>
+                <h1>{{ album.title }}</h1>
+                <div class="meta-info">
+                    <span class="artist-name-bold">{{ album.artist.name }}</span>
+                    <span class="dot">•</span>
+                    <span>{{ album.release_date.year if album.release_date else '未知年份' }}</span>
+                    <span class="dot">•</span>
+                    <span>{{ album.songs|length }} 首歌曲，{{ total_duration }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button class="play-btn-large" onclick="playFirstSong()"><i class="fa-solid fa-play"></i></button>
+            <button class="action-icon"><i class="fa-regular fa-heart"></i></button>
+            <button class="action-icon"><i class="fa-solid fa-ellipsis"></i></button>
+        </div>
+
+        <table class="song-table">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">#</th>
+                    <th>標題</th>
+                    <th style="text-align: right;"><i class="fa-regular fa-clock"></i></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for song in album.songs %}
+                <tr class="song-row" 
+                    onclick="playMusic('{{ song.audio_file_url }}', '{{ song.title }}', '{{ album.artist.name }}', '{{ album.cover_art_url }}')">
+                    <td class="song-index">
+                        <span class="index-num">{{ loop.index }}</span>
+                        <i class="fa-solid fa-play index-play-icon"></i>
+                    </td>
+                    <td>
+                        <div class="song-title-row">
+                            <span class="song-name-highlight">{{ song.title }}</span>
+                            <span class="song-artist-sub">{{ album.artist.name }}</span>
+                        </div>
+                    </td>
+                    <td style="text-align: right;">
+                        {{ song.duration_minutes }}:{{ '%02d' % song.duration_seconds }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

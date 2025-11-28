@@ -176,13 +176,15 @@ def search():
 @app.route('/album/<int:album_id>')
 @login_required
 def album_detail(album_id):
-    # get_or_404 會自動處理「找不到專輯」的情況，顯示 404 錯誤頁
     album = Album.query.get_or_404(album_id)
-    
-    # 計算總時長 (分鐘) - 這是個貼心的小功能
     total_seconds = sum(s.duration_minutes * 60 + s.duration_seconds for s in album.songs)
     total_duration = f"{total_seconds // 60} 分 {total_seconds % 60} 秒"
 
+    # ★★★ 加入這段：如果是 HTMX 請求，只回傳局部內容 ★★★
+    if request.headers.get('HX-Request'):
+        return render_template('album_content.html', album=album, total_duration=total_duration)
+
+    # 否則回傳完整頁面
     return render_template('album_detail.html', album=album, total_duration=total_duration)
 
 # app.py
