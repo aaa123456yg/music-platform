@@ -511,16 +511,16 @@ body.main-body {
 }
 
 .card {
-    background-color: #181818;
-    padding: 16px;
-    border-radius: 8px;
+    background-color: #181818; /* 深灰色背景 */
+    padding: 16px;             /* 內距 */
+    border-radius: 8px;        /* 圓角 */
     transition: background-color 0.3s;
     cursor: pointer;
     text-align: left;
 }
 
 .card:hover {
-    background-color: #282828;
+    background-color: #282828; /* 滑鼠移過去變亮 */
 }
 
 .card-img-placeholder {
