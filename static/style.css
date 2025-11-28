@@ -50,19 +50,26 @@ body:not(.main-body) {
 
 label { display: block; font-size: 0.875rem; font-weight: 700; margin-bottom: 8px; }
 
-input[type="text"], input[type="password"], input[type="number"], input[type="date"], select, input[type="file"] {
+input[type="text"],
+input[type="password"] {
     width: 100%;
     padding: 14px;
-    background-color: #121212;
-    border: 1px solid #727272;
+    /* 這是 Spotify 的輸入框背景色 */
+    background-color: #121212 !important; 
+    /* 這是 Spotify 的邊框顏色 (未選取時) */
+    border: 1px solid #727272 !important; 
     border-radius: 4px;
     color: white;
     font-size: 1rem;
-    font-family: inherit;
-    transition: border-color 0.2s;
+    box-sizing: border-box;
+    transition: all 0.2s;
 }
 
-input:focus, select:focus { outline: 2px solid #FFFFFF; border-color: transparent; }
+/* 選取時變成白框 */
+input:focus {
+    outline: 2px solid #FFFFFF;
+    border-color: transparent !important;
+}
 
 /* 修復 Chrome 自動填入變白底 */
 input:-webkit-autofill,
@@ -86,12 +93,16 @@ input[readonly] { background-color: #121212; border: 1px solid #727272; color: #
     border: none;
     border-radius: 500px;
     cursor: pointer;
-    margin-top: 20px;
+    margin-top: 30px; /* 按鈕距離上方遠一點 */
     text-transform: uppercase;
     letter-spacing: 1px;
-    transition: transform 0.1s, background-color 0.2s;
+    transition: transform 0.1s;
 }
-.btn-primary:hover { background-color: #1fdf64; transform: scale(1.02); }
+
+.btn-primary:hover {
+    background-color: #1fdf64;
+    transform: scale(1.02);
+}
 
 .footer-link { margin-top: 40px; text-align: center; border-top: 1px solid #292929; padding-top: 20px; }
 .footer-link a { color: #FFFFFF; text-decoration: none; font-weight: 700; }
@@ -120,10 +131,23 @@ input[readonly] { background-color: #121212; border: 1px solid #727272; color: #
 .toggle-password:hover { color: #ffffff; }
 
 .back-btn {
-    background: none; border: none; color: #b3b3b3; cursor: pointer;
-    padding: 0; margin-right: 20px; display: flex; align-items: center;
+    background: none;
+    border: none;
+    color: #ffffff; /* 改成白色，更明顯 */
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
 }
-.back-btn:hover { color: #ffffff; }
+
+.back-btn:hover {
+    background-color: rgba(255,255,255,0.1);
+}
 
 .error-msg { color: #e91429; font-size: 0.875rem; margin-top: 5px; display: none; font-weight: 700; }
 
@@ -153,12 +177,21 @@ select.form-control { cursor: pointer; }
 .side-nav ul { list-style: none; padding: 0; margin: 0; }
 .side-nav li { margin-bottom: 8px; }
 
+/* 鎖定側邊欄字體樣式 */
 .side-nav a {
-    color: #b3b3b3; text-decoration: none; font-weight: 700; font-size: 1rem;
-    display: flex !important; align-items: center !important; gap: 16px !important;
-    padding: 10px 16px; border-radius: 4px; transition: 0.3s;
-    font-weight: 700 !important; /* 強制粗體，避免瀏覽器渲染不一致 */
-    opacity: 1 !important;        /* 確保不透明 */
+    color: #b3b3b3;
+    text-decoration: none;
+    font-weight: 700 !important; /* ★★★ 關鍵：強制粗體 ★★★ */
+    font-size: 1rem;
+    
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important;
+    
+    padding: 10px 16px;
+    border-radius: 4px;
+    transition: color 0.3s, background-color 0.3s;
+    opacity: 1 !important; /* 確保不會變淡 */
 }
 .side-nav a:hover, .side-nav a.active { color: #ffffff; background-color: #282828; }
 .side-nav i { font-size: 1.5rem; width: 24px !important; display: flex !important; justify-content: center; align-items: center !important; }
@@ -272,8 +305,12 @@ select.form-control { cursor: pointer; }
 
 .artist-info { position: relative; z-index: 10; width: 100%; }
 .artist-info h1 {
-    font-size: 5rem; font-weight: 900; margin: 0; line-height: 1.1;
-    color: #ffffff; text-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    font-size: 5rem;
+    font-weight: 900 !important; /* ★★★ 強制最粗 ★★★ */
+    margin: 0;
+    line-height: 1.1;
+    color: #ffffff;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.6);
 }
 
 .artist-content { margin-top: 20px; width: 100%; box-sizing: border-box; }

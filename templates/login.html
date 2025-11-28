@@ -31,14 +31,15 @@
 
                 <section id="step-2" style="display: none;">
                     
-                    <header class="step2-header">
+                    <div style="margin-bottom: 20px;">
                         <button type="button" class="back-btn" onclick="goBackToStep1()" aria-label="返回">
                             <svg role="img" height="24" width="24" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M15.54 21.15L5.42 12l10.12-9.15 1.63 1.69-8.06 7.46 8.06 7.46-1.63 1.69z"></path>
                             </svg>
                         </button>
-                        <span class="step-title">使用密碼登入</span>
-                    </header>
+                    </div>
+
+                    <h1 style="text-align: left; margin-bottom: 30px; font-size: 2rem;">使用密碼登入</h1>
 
                     {% with messages = get_flashed_messages(with_categories=true) %}
                       {% if messages %}
