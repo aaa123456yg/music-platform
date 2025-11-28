@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=12">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 </head>
 <body class="main-body">
 
@@ -14,9 +15,26 @@
         <div class="logo"><h2>MusicPlatform</h2></div>
         <nav class="side-nav">
             <ul>
-                <li><a href="/"><i class="fa-solid fa-house"></i> 首頁</a></li>
-                <li><a href="#" class="active"><i class="fa-solid fa-magnifying-glass"></i> 搜尋</a></li>
-                <li><a href="#"><i class="fa-solid fa-book"></i> 你的資料庫</a></li>
+                <li>
+                    <a  href="#"
+                        hx-get="/"
+                        hx-target=".content-area" 
+                        hx-select=".content-area"
+                        hx-swap="outerHTML"
+                        hx-push-url="true">
+                        <i class="fa-solid fa-house"></i> 首頁
+                    </a>
+                </li>
+                <li>
+                    <a  href="#" 
+                        hx-get="/search" 
+                        hx-target=".content-area" 
+                        hx-select=".content-area" 
+                        hx-swap="outerHTML"
+                        hx-push-url="true">
+                        <i class="fa-solid fa-magnifying-glass"></i> 搜尋
+                    </a>
+                </li>
             </ul>
         </nav>
         <div class="playlist-section">
@@ -32,8 +50,20 @@
         
         <header class="top-bar">
             <div class="nav-buttons">
-                <a href="/" class="circle-btn"><i class="fa-solid fa-chevron-left"></i></a>
-                <a href="#" class="circle-btn"><i class="fa-solid fa-chevron-right"></i></a>
+                <a href="/" 
+                   class="circle-btn" 
+                   title="回首頁"
+                   hx-get="/" 
+                   hx-target=".content-area" 
+                   hx-select=".content-area" 
+                   hx-swap="outerHTML"
+                   hx-push-url="true">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </a>
+                
+                <a href="#" class="circle-btn" title="下一頁">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </a>
             </div>
             <div class="search-container">
                 <form action="/search" method="GET" class="search-form">
@@ -96,12 +126,20 @@
                 <h3>演出者</h3>
                 <div class="cards-container">
                     {% for artist in artists %}
-                    <div class="card">
+                    <div class="card"
+                         hx-get="/artist/{{ artist.artist_id }}"
+                         hx-target=".content-area"
+                         hx-select=".content-area"
+                         hx-swap="outerHTML"
+                         hx-push-url="true"
+                         style="cursor: pointer;">
+                         
                         {% if artist.artist_image_url %}
                             <img src="{{ artist.artist_image_url }}" class="card-img rounded-circle" alt="{{ artist.name }}" style="object-fit: cover;">
                         {% else %}
                             <div class="card-img-placeholder rounded-circle">🎤</div>
                         {% endif %}
+                        
                         <h3>{{ artist.name }}</h3>
                         <p>演出者</p>
                     </div>
@@ -115,12 +153,20 @@
                 <h3>專輯</h3>
                 <div class="cards-container">
                     {% for album in albums %}
-                    <div class="card">
+                    <div class="card"
+                         hx-get="/album/{{ album.album_id }}"
+                         hx-target=".content-area"
+                         hx-select=".content-area"
+                         hx-swap="outerHTML"
+                         hx-push-url="true"
+                         style="cursor: pointer;">
+                         
                         {% if album.cover_art_url %}
                             <img src="{{ album.cover_art_url }}" class="card-img" alt="封面">
                         {% else %}
                             <div class="card-img-placeholder">🎵</div>
                         {% endif %}
+                        
                         <h3>{{ album.title }}</h3>
                         <p>{{ album.artist.name }} • 專輯</p>
                     </div>
@@ -140,10 +186,45 @@
     </div>
 
     <div class="player-bar">
-        <div class="player-controls"><span>播放器功能開發中...</span></div>
+        
+        <div class="player-info">
+            <img id="player-cover" src="" alt="" class="player-cover-img" style="display:none;">
+            <div class="player-text">
+                <span id="player-title" class="player-title"></span>
+                <span id="player-artist" class="player-artist"></span>
+            </div>
+        </div>
+
+        <div class="player-controls">
+            <div class="control-buttons">
+                <button class="control-btn"><i class="fa-solid fa-shuffle"></i></button>
+                <button class="control-btn"><i class="fa-solid fa-backward-step"></i></button>
+                
+                <button class="control-btn play-pause-btn" onclick="togglePlay()">
+                    <i class="fa-solid fa-circle-play" id="main-play-icon"></i>
+                </button>
+                
+                <button class="control-btn"><i class="fa-solid fa-forward-step"></i></button>
+                <button class="control-btn"><i class="fa-solid fa-repeat"></i></button>
+            </div>
+
+            <div class="progress-container">
+                <span id="current-time">0:00</span>
+                <input type="range" id="progress-bar" value="0" min="0" max="100" oninput="seekAudio()">
+                <span id="total-duration">0:00</span>
+            </div>
+        </div>
+
+        <div class="player-volume">
+            <i class="fa-solid fa-volume-high"></i>
+            <input type="range" id="volume-bar" min="0" max="1" step="0.1" value="1" oninput="setVolume()">
+        </div>
+
+        <audio id="audio-player"></audio>
     </div>
 
     <script>
+        // 1. 下拉選單控制
         function toggleDropdown() { document.getElementById("userDropdown").classList.toggle("show"); }
         window.onclick = function(event) {
             if (!event.target.closest('.user-btn')) {
@@ -153,6 +234,106 @@
                 }
             }
         }
+
+        // 2. 音樂播放器邏輯
+        const audioPlayer = document.getElementById('audio-player');
+        const playIcon = document.getElementById('main-play-icon');
+        const progressBar = document.getElementById('progress-bar');
+        const currTimeDisplay = document.getElementById('current-time');
+        const totTimeDisplay = document.getElementById('total-duration');
+        
+        // 介面元素
+        const playerCover = document.getElementById('player-cover');
+        const playerTitle = document.getElementById('player-title');
+        const playerArtist = document.getElementById('player-artist');
+
+        // ★★★ 核心函式：播放指定歌曲 ★★★
+        function playMusic(url, title, artist, coverUrl) {
+            // 設定音訊來源
+            audioPlayer.src = url;
+            
+            // 更新介面文字與圖片
+            playerTitle.innerText = title;
+            playerArtist.innerText = artist;
+            
+            if (coverUrl && coverUrl !== 'None') {
+                playerCover.src = coverUrl;
+                playerCover.style.display = 'block';
+            } else {
+                playerCover.style.display = 'none';
+            }
+
+            // 開始播放
+            audioPlayer.play();
+            updatePlayIcon(true);
+        }
+
+        // 播放第一首歌 (給大綠色按鈕用的)
+        function playFirstSong() {
+            // 找到列表中的第一行歌曲
+            const firstRow = document.querySelector('.song-row');
+            if (firstRow) {
+                firstRow.click(); // 模擬點擊第一行
+            }
+        }
+
+        // 切換播放/暫停
+        function togglePlay() {
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+                updatePlayIcon(true);
+            } else {
+                audioPlayer.pause();
+                updatePlayIcon(false);
+            }
+        }
+
+        // 更新按鈕圖示 (Play vs Pause)
+        function updatePlayIcon(isPlaying) {
+            if (isPlaying) {
+                playIcon.classList.remove('fa-circle-play');
+                playIcon.classList.add('fa-circle-pause');
+            } else {
+                playIcon.classList.remove('fa-circle-pause');
+                playIcon.classList.add('fa-circle-play');
+            }
+        }
+
+        // 進度條更新 (當歌曲播放時)
+        audioPlayer.ontimeupdate = function() {
+            if (audioPlayer.duration) {
+                // 計算百分比
+                const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                progressBar.value = progress;
+
+                // 更新時間文字
+                currTimeDisplay.innerText = formatTime(audioPlayer.currentTime);
+                totTimeDisplay.innerText = formatTime(audioPlayer.duration);
+            }
+        };
+
+        // 使用者拖動進度條
+        function seekAudio() {
+            const seekTime = (progressBar.value / 100) * audioPlayer.duration;
+            audioPlayer.currentTime = seekTime;
+        }
+
+        // 音量控制
+        function setVolume() {
+            audioPlayer.volume = document.getElementById('volume-bar').value;
+        }
+
+        // 時間格式化 (秒 -> 分:秒)
+        function formatTime(seconds) {
+            const min = Math.floor(seconds / 60);
+            const sec = Math.floor(seconds % 60);
+            return min + ":" + (sec < 10 ? "0" + sec : sec);
+        }
+        
+        // 當歌曲播完時，圖示變回播放
+        audioPlayer.onended = function() {
+            updatePlayIcon(false);
+        };
     </script>
 </body>
 </html>

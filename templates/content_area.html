@@ -1,0 +1,32 @@
+<div class="content-area">
+    <h1 class="welcome-text">最新發行</h1>
+    
+    <div class="cards-container">
+        {% for album in albums %}
+        <div class="card" 
+             hx-get="/album/{{ album.album_id }}" 
+             hx-target=".content-area" 
+             hx-select=".content-area" 
+             hx-swap="outerHTML" 
+             hx-push-url="true"
+             style="cursor: pointer;">
+            
+            {% if album.cover_art_url %}
+                <img src="{{ album.cover_art_url }}" class="card-img" alt="{{ album.title }}">
+            {% else %}
+                <div class="card-img-placeholder">🎵</div>
+            {% endif %}
+            
+            <h3>{{ album.title }}</h3>
+            <p>{{ album.artist.name }}</p>
+        </div>
+        {% endfor %}
+
+        {% if not albums %}
+            <div style="text-align: center; margin-top: 50px; color: #b3b3b3;">
+                <h3>目前沒有專輯</h3>
+                <p>請前往後台系統上架音樂。</p>
+            </div>
+        {% endif %}
+    </div>
+</div>

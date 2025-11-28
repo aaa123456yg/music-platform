@@ -559,16 +559,138 @@ body.main-body {
 }
 
 /* =========================================
-   12. 底部播放器 (Player Bar)
+   13. 真實播放器樣式 (Real Player Bar)
    ========================================= */
 .player-bar {
     background-color: #181818;
     border-top: 1px solid #282828;
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr; /* 左(資訊) 中(控制) 右(音量) */
+    align-items: center;
+    padding: 0 16px;
+    height: 90px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    z-index: 200;
+    box-sizing: border-box; /* 確保 padding 不會撐大寬度 */
+}
+
+/* --- 左側：歌曲資訊 --- */
+.player-info {
     display: flex;
     align-items: center;
+}
+
+.player-cover-img {
+    width: 56px;
+    height: 56px;
+    border-radius: 4px;
+    margin-right: 12px;
+    object-fit: cover;
+    background-color: #333;
+}
+
+.player-text {
+    display: flex;
+    flex-direction: column;
     justify-content: center;
+}
+
+.player-title {
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.player-artist {
     color: #b3b3b3;
-    z-index: 200;
+    font-size: 0.75rem;
+}
+
+/* --- 中間：控制區 --- */
+.player-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.control-buttons {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 8px;
+}
+
+.control-btn {
+    background: none;
+    border: none;
+    color: #b3b3b3;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+.control-btn:hover { color: #fff; }
+
+.play-pause-btn {
+    font-size: 2rem; /* 播放鍵大一點 */
+    color: #fff;
+    transition: transform 0.1s;
+}
+.play-pause-btn:hover { transform: scale(1.1); }
+
+/* 進度條容器 */
+.progress-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 500px;
+    gap: 10px;
+    font-size: 0.75rem;
+    color: #b3b3b3;
+}
+
+/* 滑桿樣式 (Range Input) */
+input[type=range] {
+    -webkit-appearance: none; /* 移除預設樣式 */
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: #535353;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    background: #fff;
+    margin-top: 0;
+    display: none; /* 平常隱藏圓點 */
+}
+
+/* 滑鼠移上去時顯示圓點、變綠色 */
+.progress-container:hover input[type=range] {
+    background: #1db954;
+}
+.progress-container:hover input[type=range]::-webkit-slider-thumb {
+    display: block;
+}
+
+/* --- 右側：音量 --- */
+.player-volume {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    color: #b3b3b3;
+}
+
+#volume-bar {
+    width: 100px;
 }
 /* --- 成功訊息提示框 (綠色) --- */
 /* 這是給 flash('...', 'success') 用的樣式 */
