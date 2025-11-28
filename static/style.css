@@ -157,6 +157,8 @@ select.form-control { cursor: pointer; }
     color: #b3b3b3; text-decoration: none; font-weight: 700; font-size: 1rem;
     display: flex !important; align-items: center !important; gap: 16px !important;
     padding: 10px 16px; border-radius: 4px; transition: 0.3s;
+    font-weight: 700 !important; /* 強制粗體，避免瀏覽器渲染不一致 */
+    opacity: 1 !important;        /* 確保不透明 */
 }
 .side-nav a:hover, .side-nav a.active { color: #ffffff; background-color: #282828; }
 .side-nav i { font-size: 1.5rem; width: 24px !important; display: flex !important; justify-content: center; align-items: center !important; }
