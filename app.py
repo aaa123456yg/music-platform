@@ -402,6 +402,23 @@ def admin_logout():
     from flask import session
     session.pop('admin_id', None)
     return redirect(url_for('admin_login'))
+
+# app.py
+
+@app.route('/artist/<int:artist_id>')
+@login_required
+def artist_detail(artist_id):
+    artist = Artist.query.get_or_404(artist_id)
+    albums = Album.query.filter_by(artist_id=artist_id).all()
+    popular_songs = artist.songs[:5]
+    
+    # ★★★ 關鍵：如果有 HX-Request，只回傳局部內容 (artist_content.html) ★★★
+    if request.headers.get('HX-Request'):
+        return render_template('artist_content.html', artist=artist, albums=albums, popular_songs=popular_songs)
+    
+    # 否則回傳完整頁面 (artist_detail.html)
+    return render_template('artist_detail.html', artist=artist, albums=albums, popular_songs=popular_songs)
+
 # --- 啟動程式 ---
 if __name__ == '__main__':
     # 建立資料庫表格 (第一次執行時需要)

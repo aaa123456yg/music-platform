@@ -1,0 +1,107 @@
+<div class="main-content" style="padding-top: 0; position: relative;">
+    
+    <header class="top-bar transparent-bar">
+        <div class="nav-buttons">
+            <a href="/" class="circle-btn" 
+               hx-get="/" hx-target=".main-content" hx-select=".main-content" hx-swap="outerHTML" hx-push-url="true">
+                <i class="fa-solid fa-chevron-left"></i>
+            </a>
+            <a href="#" class="circle-btn"><i class="fa-solid fa-chevron-right"></i></a>
+        </div>
+
+        <div class="search-container">
+            <form action="/search" method="GET" class="search-form"
+                  hx-get="/search" hx-target=".main-content" hx-select=".main-content" hx-push-url="true">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" name="q" placeholder="想播放什麼內容？" autocomplete="off">
+            </form>
+        </div>
+
+        <div class="user-menu-container">
+            <button class="user-btn" onclick="toggleDropdown()">
+                <div class="avatar-circle"><i class="fa-solid fa-user"></i></div>
+                <span class="username">{{ current_user.display_name }}</span>
+                <i class="fa-solid fa-caret-down"></i>
+            </button>
+            <div id="userDropdown" class="dropdown-content">
+                <a href="#" class="dropdown-item">個人檔案</a>
+                <div class="divider"></div>
+                <a href="/logout" class="dropdown-item">登出</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="artist-hero" id="artist-hero" style="background-image: url('{{ artist.artist_image_url }}');">
+        <div class="artist-info">
+            <h1>{{ artist.name }}</h1>
+        </div>
+    </div>
+
+    <div class="content-area artist-content">
+        
+        <div class="action-bar">
+            <button class="play-btn-large" onclick="playFirstSong()"><i class="fa-solid fa-play"></i></button>
+            <button class="follow-btn">追蹤</button>
+            <button class="action-icon"><i class="fa-solid fa-ellipsis"></i></button>
+        </div>
+
+        <section class="section-block">
+            <h2>熱門</h2>
+            <table class="song-table">
+                <tbody>
+                    {% for song in popular_songs %}
+                    <tr class="song-row" 
+                        onclick="playMusic('{{ song.audio_file_url }}', '{{ song.title }}', '{{ artist.name }}', '{{ song.album.cover_art_url }}')">
+                        <td class="song-index">
+                            <span class="index-num">{{ loop.index }}</span>
+                            <i class="fa-solid fa-play index-play-icon"></i>
+                        </td>
+                        <td>
+                            <div class="song-item-flex">
+                                <img src="{{ song.album.cover_art_url }}" class="mini-cover">
+                                <span class="song-name-highlight">{{ song.title }}</span>
+                            </div>
+                        </td>
+                        <td style="text-align: right; color: #b3b3b3;">
+                            {{ song.duration_minutes }}:{{ '%02d' % song.duration_seconds }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <section class="section-block">
+            <h2>音樂作品</h2>
+            <div class="cards-container">
+                {% for album in albums %}
+                <div class="card" 
+                     hx-get="/album/{{ album.album_id }}"
+                     hx-target=".main-content"
+                     hx-select=".main-content"
+                     hx-swap="outerHTML"
+                     hx-push-url="true"
+                     style="cursor: pointer;">
+                     
+                    {% if album.cover_art_url %}
+                        <img src="{{ album.cover_art_url }}" class="card-img" alt="{{ album.title }}">
+                    {% else %}
+                        <div class="card-img-placeholder">🎵</div>
+                    {% endif %}
+                    <h3>{{ album.title }}</h3>
+                    <p>{{ album.release_date.year }} • 專輯</p>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+    </div>
+</div>
+
+<script>
+    var hero = document.getElementById('artist-hero');
+    var imgUrl = "{{ artist.artist_image_url }}";
+    if (hero && imgUrl && imgUrl != 'None') {
+        hero.style.backgroundImage = `linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%), url('${imgUrl}')`;
+    }
+</script>

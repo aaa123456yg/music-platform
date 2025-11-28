@@ -940,3 +940,74 @@ div.alert.alert-success svg {
     color: #b3b3b3;
     font-size: 0.85rem;
 }
+/* =========================================
+   [新] 演出者詳情頁專用樣式
+   ========================================= */
+
+/* 1. 滿版大圖背景區 */
+.artist-hero {
+    position: relative;
+    height: 340px; /* 固定高度，保證足夠顯示大圖 */
+    min-height: 40vh;
+    width: 100%;
+    background-color: #535353; /* 預設底色 */
+    background-size: cover;
+    background-position: center 20%; /* 重心稍微偏上，適合人像 */
+    
+    /* 使用 Flex 讓文字沈在底部 */
+    display: flex;
+    align-items: flex-end;
+    padding: 24px 32px;
+    
+    /* 修正層級，讓它在內容區的最上方 */
+    margin-top: -64px; /* 往上拉，塞入 Top Bar 後面 */
+    padding-top: 84px; /* 補回被吃掉的空間 */
+    z-index: 1; 
+}
+
+/* 2. 背景漸層遮罩 (讓文字更清楚) */
+.artist-hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 100%);
+    z-index: 1; /* 在圖片之上，文字之下 */
+}
+
+/* 3. 歌手文字資訊 */
+.artist-header-content {
+    position: relative;
+    z-index: 10; /* 最上層，保證文字看得到 */
+    width: 100%;
+}
+
+.artist-name-large {
+    font-size: 5rem; /* 超大字體 */
+    font-weight: 900;
+    margin: 0;
+    line-height: 1;
+    color: #ffffff;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.5); /* 文字陰影 */
+}
+
+.artist-monthly-listeners {
+    margin-top: 10px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #ffffff;
+}
+
+/* 4. 透明導覽列 (只在歌手頁生效) */
+.main-content .top-bar.transparent-nav {
+    background-color: rgba(0, 0, 0, 0.2); /* 半透明黑 */
+    backdrop-filter: none; /* 移除模糊，看得到後面的圖 */
+    border-bottom: none;
+}
+
+/* 5. 歌手頁內容區 */
+.artist-body {
+    position: relative;
+    z-index: 2; /* 確保內容蓋在背景圖下方延伸 */
+    background: linear-gradient(to bottom, rgba(18,18,18,1) 0%, #121212 100%);
+    padding: 24px 32px;
+}
