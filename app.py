@@ -207,6 +207,30 @@ def toggle_like(song_id):
             </i>
         '''
 
+# app.py
+
+# app.py
+
+@app.route('/collection/tracks')
+@login_required
+def liked_songs():
+    # ★★★ 修改查詢：同時抓取 Song 物件和 user_liked_songs 表裡的 liked_at 時間 ★★★
+    # 這會回傳一個列表，裡面每一項都是 (Song, datetime) 的 Tuple
+    results = db.session.query(Song, user_liked_songs.c.liked_at)\
+        .join(user_liked_songs)\
+        .filter(user_liked_songs.c.user_id == current_user.user_id)\
+        .order_by(user_liked_songs.c.liked_at.desc())\
+        .all()
+    
+    song_count = len(results)
+    
+    # HTMX 請求
+    if request.headers.get('HX-Request'):
+        return render_template('liked_content.html', songs=results, song_count=song_count)
+    
+    # 一般請求
+    return render_template('liked_songs.html', songs=results, song_count=song_count)
+
 # app.py 新增專輯詳情頁路由
 
 @app.route('/album/<int:album_id>')
