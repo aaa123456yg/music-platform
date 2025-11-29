@@ -11,30 +11,7 @@
 </head>
 <body class="main-body">
 
-    <div class="sidebar">
-        <div class="logo"><h2>MusicPlatform</h2></div>
-        <nav class="side-nav">
-            <ul>
-                <li>
-                    <a href="/" hx-get="/" hx-target=".main-content" hx-select=".main-content" hx-swap="outerHTML" hx-push-url="true">
-                        <i class="fa-solid fa-house"></i> 首頁
-                    </a>
-                </li>
-                <li>
-                    <a href="/search" hx-get="/search" hx-target=".main-content" hx-select=".main-content" hx-swap="outerHTML" hx-push-url="true">
-                        <i class="fa-solid fa-magnifying-glass"></i> 搜尋
-                    </a>
-                </li>
-                <li><a href="#"><i class="fa-solid fa-book"></i> 你的資料庫</a></li>
-            </ul>
-        </nav>
-        <div class="playlist-section">
-            <div class="section-title">播放清單</div>
-            <ul class="playlist-list">
-                <li>我的最愛</li>
-            </ul>
-        </div>
-    </div>
+    {% include 'sidebar.html' %}
 
     {% include 'artist_content.html' %}
 
