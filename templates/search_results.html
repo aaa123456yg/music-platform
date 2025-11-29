@@ -66,7 +66,7 @@
                             <th>標題</th>
                             <th>專輯</th>
                             <th>時長</th>
-                            <th></th>
+                            <th style="width: 80px;"></th> 
                         </tr>
                     </thead>
                     <tbody>
@@ -96,24 +96,27 @@
                             <td style="text-align: right; color: #b3b3b3;">
                                 {{ song.duration_minutes }}:{{ '%02d' % song.duration_seconds }}
                             </td>
-                            <td style="text-align: center; width: 40px;">
-                                <div onclick="event.stopPropagation()">
+
+                            <td style="text-align: center;">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 15px;" onclick="event.stopPropagation()">
+                                    
                                     {% if song in current_user.liked_songs %}
-                                        <i class="fa-solid fa-heart like-btn" 
-                                           style="color: #1ed760; cursor: pointer;" 
-                                           hx-post="/toggle_like/{{ song.song_id }}" 
-                                           hx-swap="outerHTML">
-                                        </i>
+                                        <i class="fa-solid fa-heart like-btn" style="color: #1ed760; cursor: pointer;" hx-post="/toggle_like/{{ song.song_id }}" hx-swap="outerHTML"></i>
                                     {% else %}
-                                        <i class="fa-regular fa-heart like-btn" 
-                                           style="cursor: pointer;" 
-                                           hx-post="/toggle_like/{{ song.song_id }}" 
-                                           hx-swap="outerHTML">
-                                        </i>
+                                        <i class="fa-regular fa-heart like-btn" style="cursor: pointer;" hx-post="/toggle_like/{{ song.song_id }}" hx-swap="outerHTML"></i>
                                     {% endif %}
+
+                                    <i class="fa-solid fa-circle-plus" 
+                                       style="color: #b3b3b3; cursor: pointer; font-size: 1.1rem;" 
+                                       title="加入播放清單"
+                                       onmouseover="this.style.color='#fff'"
+                                       onmouseout="this.style.color='#b3b3b3'"
+                                       onclick="openAddToPlaylistModal('{{ song.song_id }}')">
+                                    </i>
+
                                 </div>
                             </td>
-                        </tr>
+                            </tr>
                         {% endfor %}
                     </tbody>
                 </table>

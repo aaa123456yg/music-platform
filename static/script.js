@@ -205,3 +205,33 @@ window.onclick = function(event) {
         }
     }
 }
+// --- 12. 加入歌曲到播放清單邏輯 ---
+
+let currentSongIdToAdd = null; // 暫存現在要加哪首歌
+
+function openAddToPlaylistModal(songId) {
+    currentSongIdToAdd = songId;
+    const modal = document.getElementById("addToPlaylistModal");
+    modal.style.display = "flex";
+}
+
+function closeAddToPlaylistModal() {
+    const modal = document.getElementById("addToPlaylistModal");
+    modal.style.display = "none";
+}
+
+function submitAddToPlaylist(playlistId) {
+    if (!currentSongIdToAdd) return;
+
+    // 使用 HTMX 手動觸發請求
+    // 這裡我們直接用 htmx.ajax 發送 POST
+    htmx.ajax('POST', `/add_to_playlist/${playlistId}/${currentSongIdToAdd}`, {
+        target: '#main-content', // 這裡 target 設哪裡不重要，因為後端只回傳 script
+        swap: 'none' // 不替換任何內容，只執行回傳的 script (關閉視窗)
+    }).then(() => {
+        // 請求完成後，手動關閉視窗並顯示提示 (Flash message 會由後端處理，這裡只要關視窗)
+        closeAddToPlaylistModal();
+        // 重新整理頁面以顯示 Flash Message (或者用更進階的 Toast)
+        location.reload(); 
+    });
+}

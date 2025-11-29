@@ -348,6 +348,35 @@ def create_playlist():
         return render_template('partials/playlist_items.html', my_playlists=Playlist.query.filter_by(user_id=current_user.user_id).order_by(Playlist.created_at.desc()).all())
         
     return '', 204 # 如果沒名字，什麼都不做
+
+# app.py - 加入歌曲到播放清單
+
+@app.route('/add_to_playlist/<int:playlist_id>/<int:song_id>', methods=['POST'])
+@login_required
+def add_to_playlist(playlist_id, song_id):
+    # 1. 檢查清單是否存在且屬於該使用者
+    playlist = Playlist.query.filter_by(playlist_id=playlist_id, user_id=current_user.user_id).first()
+    song = Song.query.get_or_404(song_id)
+    
+    if not playlist:
+        return "無權限或清單不存在", 403
+
+    # 2. 檢查是否已經在清單裡了 (避免重複加入)
+    if song in playlist.songs:
+        flash(f'歌曲已存在於 {playlist.name}', 'warning')
+    else:
+        # 3. 加入關聯
+        # 這裡我們需要手動處理 playlist_songs 表，因為有 track_order 欄位
+        # 為了簡化，我們先直接 append，SQLAlchemy 會處理中間表，但 track_order 預設會是 NULL
+        # 如果要嚴謹，可以查詢目前最大順序 + 1
+        playlist.songs.append(song)
+        db.session.commit()
+        flash(f'已將 {song.title} 加入 {playlist.name}', 'success')
+    
+    # 加入後關閉 Modal (回傳一個空的 response 或觸發前端事件)
+    # 這裡我們回傳一個簡單的 script 讓前端知道要關閉視窗
+    return "<script>closeAddToPlaylistModal();</script>"
+
 # 1. 後台登入
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():

@@ -58,7 +58,7 @@
                 <tbody>
                     {% for song in popular_songs %}
                     <tr class="song-row" 
-                        onclick="playMusic('{{ song.audio_file_url }}', '{{ song.title }}', '{{ song.album.artist.name }}', '{{ song.album.cover_art_url }}', this)">
+                        onclick="playMusic('{{ song.audio_file_url }}', '{{ song.title }}', '{{ artist.name }}', '{{ song.album.cover_art_url }}', this)">
                         <td class="song-index">
                             <span class="index-num">{{ loop.index }}</span>
                             <i class="fa-solid fa-play index-play-icon"></i>
@@ -70,13 +70,22 @@
                             </div>
                         </td>
 
-                        <td style="text-align: center; width: 40px;">
-                            <div onclick="event.stopPropagation()">
+                        <td style="text-align: center; width: 100px;">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 15px;" onclick="event.stopPropagation()">
+                                
                                 {% if song in current_user.liked_songs %}
                                     <i class="fa-solid fa-heart like-btn" style="color: #1ed760; cursor: pointer;" hx-post="/toggle_like/{{ song.song_id }}" hx-swap="outerHTML"></i>
                                 {% else %}
                                     <i class="fa-regular fa-heart like-btn" style="cursor: pointer;" hx-post="/toggle_like/{{ song.song_id }}" hx-swap="outerHTML"></i>
                                 {% endif %}
+
+                                <i class="fa-solid fa-circle-plus" 
+                                   style="color: #b3b3b3; cursor: pointer; font-size: 1.1rem;" 
+                                   title="加入播放清單"
+                                   onmouseover="this.style.color='#fff'"
+                                   onmouseout="this.style.color='#b3b3b3'"
+                                   onclick="openAddToPlaylistModal('{{ song.song_id }}')">
+                                </i>
                             </div>
                         </td>
                         <td style="text-align: right; color: #b3b3b3;">
