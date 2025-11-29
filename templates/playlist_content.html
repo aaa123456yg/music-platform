@@ -1,4 +1,4 @@
-<div id="main-content" class="main-content" style="position: relative; overflow-y: auto;">
+<div id="main-content" class="main-content" style="padding-top: 0; position: relative; overflow-y: auto;">
     
     <header class="top-bar transparent-bar" style="position: absolute; width: 100%; top: 0; left: 0; background: rgba(0,0,0,0.3); border: none; z-index: 10;">
         <div class="nav-buttons">
@@ -70,7 +70,15 @@
         
         <div class="action-bar">
             <button class="play-btn-large" onclick="playFirstSong()"><i class="fa-solid fa-play"></i></button>
-            <button class="action-icon"><i class="fa-solid fa-ellipsis"></i></button>
+            
+            {% if current_user.user_id == playlist.user_id %}
+            <button class="action-icon" 
+                    title="刪除此清單"
+                    hx-delete="/delete_playlist/{{ playlist.playlist_id }}" 
+                    hx-confirm="確定要刪除「{{ playlist.name }}」嗎？此動作無法復原。">
+                <i class="fa-solid fa-trash" style="font-size: 1.5rem;"></i>
+            </button>
+            {% endif %}
         </div>
 
         <table class="song-table">
@@ -116,6 +124,19 @@
                             {% else %}
                                 <i class="fa-regular fa-heart like-btn" style="cursor: pointer;" hx-post="/toggle_like/{{ song.song_id }}" hx-swap="outerHTML"></i>
                             {% endif %}
+
+                            {% if current_user.user_id == playlist.user_id %}
+                                <i class="fa-solid fa-circle-minus" 
+                                   style="color: #b3b3b3; cursor: pointer; font-size: 1.1rem;" 
+                                   title="從清單移除"
+                                   onmouseover="this.style.color='#fff'"
+                                   onmouseout="this.style.color='#b3b3b3'"
+                                   hx-delete="/playlist/{{ playlist.playlist_id }}/remove_song/{{ song.song_id }}"
+                                   hx-target="closest tr" 
+                                   hx-swap="outerHTML">
+                                </i>
+                            {% endif %}
+                            
                         </div>
                     </td>
 

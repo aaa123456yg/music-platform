@@ -1,0 +1,14 @@
+{% for playlist in my_playlists %}
+<div class="playlist-option" 
+     onclick="submitAddToPlaylist('{{ playlist.playlist_id }}')"
+     style="padding: 12px; border-bottom: 1px solid #333; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+    
+    <span>{{ playlist.name }}</span>
+    <i class="fa-solid fa-plus" style="color: #1ed760;"></i>
+    
+</div>
+{% endfor %}
+
+{% if not my_playlists %}
+    <p style="color: #b3b3b3; text-align: center;">你還沒有建立任何播放清單</p>
+{% endif %}

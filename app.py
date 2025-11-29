@@ -330,7 +330,6 @@ def inject_playlists():
 def create_playlist():
     name = request.form.get('name')
     description = request.form.get('description')
-    # 取得 checkbox 的值 (有勾選是 'on'，沒勾選是 None)
     is_public = True if request.form.get('is_public') == 'on' else False
     
     if name:
@@ -343,11 +342,13 @@ def create_playlist():
         db.session.add(new_playlist)
         db.session.commit()
         
-        # 建立成功後，回傳最新的清單列表 HTML 片段給 HTMX 更新側邊欄
-        # 這裡我們只回傳 <li>...</li> 的部分
-        return render_template('partials/playlist_items.html', my_playlists=Playlist.query.filter_by(user_id=current_user.user_id).order_by(Playlist.created_at.desc()).all())
+        # 重新撈取最新資料
+        updated_playlists = Playlist.query.filter_by(user_id=current_user.user_id).order_by(Playlist.created_at.desc()).all()
         
-    return '', 204 # 如果沒名字，什麼都不做
+        # ★★★ 修改這裡：回傳可以同時更新兩個地方的模板 ★★★
+        return render_template('actions/create_playlist_response.html', my_playlists=updated_playlists)
+        
+    return '', 204
 
 # app.py - 加入歌曲到播放清單
 
@@ -397,6 +398,44 @@ def playlist_detail(playlist_id):
     
     return render_template('playlist_detail.html', playlist=playlist, songs=songs, song_count=song_count, total_duration=total_duration)
 
+# app.py
+
+# 1. 移除清單內的歌曲
+@app.route('/playlist/<int:playlist_id>/remove_song/<int:song_id>', methods=['DELETE'])
+@login_required
+def remove_song_from_playlist(playlist_id, song_id):
+    # 確保是自己的清單
+    playlist = Playlist.query.filter_by(playlist_id=playlist_id, user_id=current_user.user_id).first()
+    
+    if not playlist:
+        return "無權限", 403
+    
+    song = Song.query.get(song_id)
+    if song and song in playlist.songs:
+        playlist.songs.remove(song)
+        db.session.commit()
+    
+    # 回傳空字串，HTMX 會把前端對應的那一行 HTML 刪除
+    return '' 
+
+# 2. 刪除整個播放清單
+@app.route('/delete_playlist/<int:playlist_id>', methods=['DELETE'])
+@login_required
+def delete_playlist(playlist_id):
+    playlist = Playlist.query.filter_by(playlist_id=playlist_id, user_id=current_user.user_id).first()
+    
+    if not playlist:
+        return "無權限", 403
+        
+    db.session.delete(playlist)
+    db.session.commit()
+    
+    # 特殊指令：告訴 HTMX 刪除成功後，直接「轉址」回首頁
+    # 這樣側邊欄也會跟著刷新，該清單就會消失
+    from flask import make_response
+    resp = make_response()
+    resp.headers['HX-Location'] = '/'
+    return resp
 
 # 1. 後台登入
 @app.route('/admin/login', methods=['GET', 'POST'])
