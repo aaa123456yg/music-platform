@@ -46,7 +46,16 @@
                 <span class="type-label">專輯</span>
                 <h1>{{ album.title }}</h1>
                 <div class="meta-info">
-                    <span class="artist-name-bold">{{ album.artist.name }}</span>
+                    <a  href="#" 
+                        hx-get="/artist/{{ album.artist.artist_id }}" 
+                        hx-target=".main-content" 
+                        hx-select=".main-content" 
+                        hx-swap="outerHTML" 
+                        hx-push-url="true"
+                        class="artist-name-bold"
+                        style="text-decoration: none; color: #ffffff; cursor: pointer;">
+                        {{ album.artist.name }}
+                    </a>
                     <span class="dot">•</span>
                     <span>{{ album.release_date.year if album.release_date else '未知年份' }}</span>
                     <span class="dot">•</span>

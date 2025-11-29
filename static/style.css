@@ -437,6 +437,10 @@ select.form-control { cursor: pointer; }
     z-index: 1000;
     box-sizing: border-box;
 }
+
+.artist-name-bold:hover {
+    text-decoration: underline !important;
+}
 .player-info { display: flex; align-items: center; }
 .player-cover-img { width: 56px; height: 56px; border-radius: 4px; margin-right: 12px; background-color: #333; object-fit: cover; }
 .player-title { color: #fff; font-size: 0.9rem; font-weight: 500; display: block; }
