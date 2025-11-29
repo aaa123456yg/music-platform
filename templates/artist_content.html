@@ -102,6 +102,34 @@
             </div>
         </section>
 
+        <section class="section-block">
+            <h2>關於</h2>
+            <div class="artist-bio-card" 
+                 style="
+                    background-color: #282828; /* 深灰底色 */
+                    border-radius: 8px;
+                    padding: 40px;
+                    cursor: default;
+                    transition: transform 0.3s;
+                 "
+                 onmouseover="this.style.backgroundColor='#333'"
+                 onmouseout="this.style.backgroundColor='#282828'">
+                
+                <div class="bio-content">
+                    <h3 style="font-size: 2rem; font-weight: 700; margin-bottom: 16px; color: white;">
+                        {{ artist.name }}
+                    </h3>
+                    <p style="
+                        font-size: 1.2rem; /* 加大 */
+                        line-height: 1.6; 
+                        color: #e0e0e0; 
+                        white-space: pre-line;">
+                        {{ artist.bio if artist.bio else '這位演出者尚未提供簡介。' }}
+                    </p>
+                </div>
+            </div>
+        </section>
+
     </div>
 </div>
 
