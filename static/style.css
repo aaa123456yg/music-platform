@@ -441,6 +441,43 @@ select.form-control { cursor: pointer; }
 .artist-name-bold:hover {
     text-decoration: underline !important;
 }
+/* =========================================
+   播放模式按鈕樣式 (Repeat Button)
+   ========================================= */
+
+/* 狀態 1: 啟用 (綠色) */
+.control-btn.active {
+    color: #1ed760; /* Spotify 綠 */
+    position: relative; /* 為了讓偽元素定位 */
+}
+
+/* 狀態 2: 單曲循環 (綠色 + 小小的 1) */
+.control-btn.repeat-one::after {
+    content: '1';           /* 顯示數字 1 */
+    position: absolute;
+    top: 3px;               /* 調整垂直位置 */
+    left: 50%;              /* 水平置中 */
+    transform: translateX(-50%);
+    font-size: 0.6rem;      /* 字體縮小 */
+    font-weight: 900;
+    color: #181818;         /* 數字黑色 */
+    background-color: #1ed760; /* 背景綠色 */
+    border-radius: 50%;     /* 圓形背景 */
+    width: 12px;
+    height: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 2px #000; /* 加一點陰影增加對比 */
+}
+
+/* 讓播放中的歌曲在列表中有明顯標示 (選用，增加體驗) */
+.song-row.playing {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+.song-row.playing .song-name-highlight {
+    color: #1ed760;
+}
 .player-info { display: flex; align-items: center; }
 .player-cover-img { width: 56px; height: 56px; border-radius: 4px; margin-right: 12px; background-color: #333; object-fit: cover; }
 .player-title { color: #fff; font-size: 0.9rem; font-weight: 500; display: block; }

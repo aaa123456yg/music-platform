@@ -58,7 +58,7 @@
                 <tbody>
                     {% for song in popular_songs %}
                     <tr class="song-row" 
-                        onclick="playMusic('{{ song.audio_file_url }}', '{{ song.title }}', '{{ artist.name }}', '{{ song.album.cover_art_url }}')">
+                        onclick="playMusic('{{ song.audio_file_url }}', '{{ song.title }}', '{{ album.artist.name }}', '{{ album.cover_art_url }}', this)">
                         <td class="song-index">
                             <span class="index-num">{{ loop.index }}</span>
                             <i class="fa-solid fa-play index-play-icon"></i>
