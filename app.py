@@ -407,18 +407,36 @@ def admin_logout():
 
 # app.py
 
+# app.py
+
 @app.route('/artist/<int:artist_id>')
 @login_required
 def artist_detail(artist_id):
+    # 1. 抓取歌手資料
     artist = Artist.query.get_or_404(artist_id)
-    albums = Album.query.filter_by(artist_id=artist_id).all()
-    popular_songs = artist.songs[:5]
     
-    # ★★★ 關鍵：如果有 HX-Request，只回傳局部內容 (artist_content.html) ★★★
+    # 2. 抓取該歌手的所有專輯
+    albums = Album.query.filter_by(artist_id=artist_id).all()
+    
+    # 3. ★★★ 抓取熱門歌曲 (邏輯修正) ★★★
+    # 方法：把這位歌手所有專輯裡的歌都拿出來，然後依照「上架日期」從新到舊排序
+    all_songs = []
+    for album in albums:
+        for song in album.songs:
+            all_songs.append(song)
+    
+    # 使用 Python 進行排序 (最新的在前面)，並只取前 5 首
+    # 如果沒有 upload_date，就用最小日期代替，避免報錯
+    popular_songs = sorted(
+        all_songs, 
+        key=lambda x: x.upload_date if x.upload_date else datetime.min, 
+        reverse=True
+    )[:5]
+    
+    # 4. 回傳頁面 (HTMX 邏輯保持不變)
     if request.headers.get('HX-Request'):
         return render_template('artist_content.html', artist=artist, albums=albums, popular_songs=popular_songs)
     
-    # 否則回傳完整頁面 (artist_detail.html)
     return render_template('artist_detail.html', artist=artist, albums=albums, popular_songs=popular_songs)
 
 # --- 啟動程式 ---
