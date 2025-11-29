@@ -62,7 +62,7 @@
                 <table class="song-table">
                     <thead>
                         <tr>
-                            <th>#</th>
+                            <th style="width: 50px;">#</th>
                             <th>標題</th>
                             <th>專輯</th>
                             <th>時長</th>
@@ -71,15 +71,31 @@
                     </thead>
                     <tbody>
                         {% for song in songs %}
-                        <tr>
-                            <td>{{ loop.index }}</td>
+                        <tr class="song-row" 
+                            onclick="playMusic('{{ song.audio_file_url }}', '{{ song.title }}', '{{ song.album.artist.name }}', '{{ song.album.cover_art_url }}')">
+                            
+                            <td class="song-index">
+                                <span class="index-num">{{ loop.index }}</span>
+                                <i class="fa-solid fa-play index-play-icon"></i>
+                            </td>
+
                             <td>
                                 <div class="song-title-row">
-                                    <span class="song-name">{{ song.title }}</span>
+                                    <div class="song-item-flex">
+                                        {% if song.album.cover_art_url %}
+                                            <img src="{{ song.album.cover_art_url }}" class="mini-cover" style="width: 40px; height: 40px; margin-right: 12px;">
+                                        {% endif %}
+                                        <div>
+                                            <span class="song-name-highlight">{{ song.title }}</span>
+                                            <span class="song-artist-sub">{{ song.album.artist.name }}</span>
+                                        </div>
                                     </div>
+                                </div>
                             </td>
                             <td>{{ song.album.title }}</td>
-                            <td>{{ song.duration_minutes }}:{{ '%02d' % song.duration_seconds }}</td>
+                            <td style="text-align: right; color: #b3b3b3;">
+                                {{ song.duration_minutes }}:{{ '%02d' % song.duration_seconds }}
+                            </td>
                             <td><i class="fa-regular fa-heart like-btn"></i></td>
                         </tr>
                         {% endfor %}
