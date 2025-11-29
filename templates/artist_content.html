@@ -2,16 +2,13 @@
     
     <header class="top-bar transparent-bar" style="position: absolute; width: 100%; top: 0; left: 0; background: rgba(0,0,0,0.3); border: none; z-index: 10;">
         <div class="nav-buttons">
-            <a href="/" 
-               class="circle-btn" 
-               hx-get="/" 
-               hx-target=".main-content" 
-               hx-select=".main-content" 
-               hx-swap="outerHTML" 
-               hx-push-url="true">
+            <button class="circle-btn" onclick="history.back()" title="上一頁">
                 <i class="fa-solid fa-chevron-left"></i>
-            </a>
-            <a href="#" class="circle-btn"><i class="fa-solid fa-chevron-right"></i></a>
+            </button>
+            
+            <button class="circle-btn" onclick="history.forward()" title="下一頁">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
         </div>
 
         <div class="search-container">
