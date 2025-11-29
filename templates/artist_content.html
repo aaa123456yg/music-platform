@@ -69,6 +69,16 @@
                                 <span class="song-name-highlight">{{ song.title }}</span>
                             </div>
                         </td>
+
+                        <td style="text-align: center; width: 40px;">
+                            <div onclick="event.stopPropagation()">
+                                {% if song in current_user.liked_songs %}
+                                    <i class="fa-solid fa-heart like-btn" style="color: #1ed760; cursor: pointer;" hx-post="/toggle_like/{{ song.song_id }}" hx-swap="outerHTML"></i>
+                                {% else %}
+                                    <i class="fa-regular fa-heart like-btn" style="cursor: pointer;" hx-post="/toggle_like/{{ song.song_id }}" hx-swap="outerHTML"></i>
+                                {% endif %}
+                            </div>
+                        </td>
                         <td style="text-align: right; color: #b3b3b3;">
                             {{ song.duration_minutes }}:{{ '%02d' % song.duration_seconds }}
                         </td>

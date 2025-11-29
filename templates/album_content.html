@@ -75,7 +75,7 @@
                 <tr>
                     <th style="width: 50px;">#</th>
                     <th>標題</th>
-                    <th style="text-align: right;"><i class="fa-regular fa-clock"></i></th>
+                    <th style="width: 40px;"></th> <th style="text-align: right;"><i class="fa-regular fa-clock"></i></th>
                 </tr>
             </thead>
             <tbody>
@@ -90,6 +90,16 @@
                         <div class="song-title-row">
                             <span class="song-name-highlight">{{ song.title }}</span>
                             <span class="song-artist-sub">{{ album.artist.name }}</span>
+                        </div>
+                    </td>
+
+                    <td style="text-align: center;">
+                        <div onclick="event.stopPropagation()">
+                            {% if song in current_user.liked_songs %}
+                                <i class="fa-solid fa-heart like-btn" style="color: #1ed760; cursor: pointer;" hx-post="/toggle_like/{{ song.song_id }}" hx-swap="outerHTML"></i>
+                            {% else %}
+                                <i class="fa-regular fa-heart like-btn" style="cursor: pointer;" hx-post="/toggle_like/{{ song.song_id }}" hx-swap="outerHTML"></i>
+                            {% endif %}
                         </div>
                     </td>
                     <td style="text-align: right;">

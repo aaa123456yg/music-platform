@@ -171,6 +171,42 @@ def search():
 
     return render_template('search_results.html', q=q, songs=songs, albums=albums, artists=artists)
 
+@app.route('/toggle_like/<int:song_id>', methods=['POST'])
+@login_required
+def toggle_like(song_id):
+    song = Song.query.get_or_404(song_id)
+    
+    # 判斷邏輯：如果已經收藏就移除，沒收藏就加入
+    if song in current_user.liked_songs:
+        current_user.liked_songs.remove(song)
+        is_liked = False
+    else:
+        current_user.liked_songs.append(song)
+        is_liked = True
+        
+    db.session.commit()
+    
+    # 回傳新的 HTML 片段給 HTMX 替換
+    # 這樣前端不用刷新頁面，愛心就會自動變色
+    if is_liked:
+        # 狀態：已收藏 (實心綠色愛心)
+        return f'''
+            <i class="fa-solid fa-heart like-btn" 
+               style="color: #1ed760; cursor: pointer;" 
+               hx-post="/toggle_like/{song.song_id}" 
+               hx-swap="outerHTML">
+            </i>
+        '''
+    else:
+        # 狀態：未收藏 (空心愛心)
+        return f'''
+            <i class="fa-regular fa-heart like-btn" 
+               style="cursor: pointer;" 
+               hx-post="/toggle_like/{song.song_id}" 
+               hx-swap="outerHTML">
+            </i>
+        '''
+
 # app.py 新增專輯詳情頁路由
 
 @app.route('/album/<int:album_id>')
