@@ -181,13 +181,13 @@
         <div class="player-controls">
             <div class="control-buttons">
                 <button class="control-btn"><i class="fa-solid fa-shuffle"></i></button>
-                <button class="control-btn"><i class="fa-solid fa-backward-step"></i></button>
-                
-                <button class="control-btn play-pause-btn" onclick="togglePlay()">
-                    <i class="fa-solid fa-circle-play" id="main-play-icon"></i>
+                <button class="control-btn" onclick="playPrevSong()" title="上一首">
+                    <i class="fa-solid fa-backward-step"></i>
                 </button>
-                
-                <button class="control-btn"><i class="fa-solid fa-forward-step"></i></button>
+                <button class="control-btn play-pause-btn" onclick="togglePlay()"><i class="fa-solid fa-circle-play" id="main-play-icon"></i></button>
+                <button class="control-btn" onclick="playNextSong(false)" title="下一首">
+                    <i class="fa-solid fa-forward-step"></i>
+                </button>
                 <button class="control-btn" id="repeat-btn" onclick="toggleRepeat()" title="切換循環模式">
                     <i class="fa-solid fa-repeat"></i>
                 </button>
@@ -209,7 +209,7 @@
     </div>
 
     <script>
-        // --- 1. 下拉選單控制 ---
+        // 1. 下拉選單控制
         function toggleDropdown() { document.getElementById("userDropdown").classList.toggle("show"); }
         window.onclick = function(event) {
             if (!event.target.closest('.user-btn')) {
@@ -220,7 +220,7 @@
             }
         }
 
-        // --- 2. 播放器變數 ---
+        // 2. 播放器變數
         const audioPlayer = document.getElementById('audio-player');
         const playIcon = document.getElementById('main-play-icon');
         const progressBar = document.getElementById('progress-bar');
@@ -229,14 +229,13 @@
         const playerCover = document.getElementById('player-cover');
         const playerTitle = document.getElementById('player-title');
         const playerArtist = document.getElementById('player-artist');
-        const repeatBtn = document.getElementById('repeat-btn'); // 新增
+        const repeatBtn = document.getElementById('repeat-btn'); // 記得確認 HTML 有沒有加這個 ID
 
-        // 全域變數：紀錄循環狀態與目前播放行
+        // 全域變數
         let repeatState = 0; // 0:不循環, 1:列表循環, 2:單曲循環
         let currentPlayingRow = null; 
 
-        // --- 3. 播放音樂 (核心) ---
-        // 注意：這裡接收了第 5 個參數 rowElement (this)
+        // 3. 播放指定歌曲
         function playMusic(url, title, artist, coverUrl, rowElement) {
             audioPlayer.src = url;
             playerTitle.innerText = title;
@@ -249,25 +248,24 @@
                 playerCover.style.display = 'none';
             }
 
-            // 標記目前播放的那一行 (視覺效果 + 邏輯用)
+            // 紀錄目前播放的行
             if (currentPlayingRow) currentPlayingRow.classList.remove('playing');
             if (rowElement) {
                 currentPlayingRow = rowElement;
-                // 如果你有在 CSS 加 .playing 樣式，這裡會生效
-                // rowElement.classList.add('playing'); 
+                // rowElement.classList.add('playing'); // 可選：加上 CSS 樣式
             }
 
             audioPlayer.play();
             updatePlayIcon(true);
         }
 
-        // --- 4. 播放第一首 ---
+        // 4. 播放第一首
         function playFirstSong() {
             const firstRow = document.querySelector('.song-row');
             if (firstRow) firstRow.click();
         }
 
-        // --- 5. 切換播放/暫停 ---
+        // 5. 切換播放/暫停
         function togglePlay() {
             if (audioPlayer.paused) {
                 audioPlayer.play();
@@ -288,61 +286,81 @@
             }
         }
 
-        // --- 6. 切換循環模式 (點擊按鈕觸發) ---
+        // 6. 切換循環模式
         function toggleRepeat() {
-            repeatState = (repeatState + 1) % 3; // 0->1->2->0
+            repeatState = (repeatState + 1) % 3; 
+            
+            // 這裡假設你有加 repeat-btn 的 HTML id，如果沒加會報錯，請確保步驟正確
+            if(repeatBtn) {
+                repeatBtn.classList.remove('active');
+                repeatBtn.classList.remove('repeat-one');
 
-            // 清除舊樣式
-            repeatBtn.classList.remove('active');
-            repeatBtn.classList.remove('repeat-one');
-
-            if (repeatState === 1) {
-                // 列表循環 (綠色)
-                repeatBtn.classList.add('active');
-                repeatBtn.title = "列表循環";
-            } else if (repeatState === 2) {
-                // 單曲循環 (綠色+1)
-                repeatBtn.classList.add('active');
-                repeatBtn.classList.add('repeat-one');
-                repeatBtn.title = "單曲循環";
-            } else {
-                // 不循環 (灰色)
-                repeatBtn.title = "不循環";
+                if (repeatState === 1) {
+                    repeatBtn.classList.add('active');
+                    repeatBtn.title = "列表循環";
+                } else if (repeatState === 2) {
+                    repeatBtn.classList.add('active');
+                    repeatBtn.classList.add('repeat-one');
+                    repeatBtn.title = "單曲循環";
+                } else {
+                    repeatBtn.title = "不循環";
+                }
             }
         }
 
-        // --- 7. 自動播放下一首邏輯 ---
-        audioPlayer.onended = function() {
-            if (repeatState === 2) {
-                // 單曲循環：重播
+        // ★★★ 7. 下一首邏輯 (你提供的代碼) ★★★
+        function playNextSong(autoPlay = false) {
+            // 如果是自動播放(播完了)，且模式是單曲循環，就重播
+            if (autoPlay && repeatState === 2) {
                 audioPlayer.currentTime = 0;
                 audioPlayer.play();
-            } else if (repeatState === 1) {
-                // 列表循環：找下一首
-                playNextSong(true); 
-            } else {
-                // 不循環：停止
-                updatePlayIcon(false);
+                return;
             }
-        };
 
-        function playNextSong(loop) {
+            // 如果是用戶點擊按鈕
+            if (!autoPlay) {
+                // 如果是單曲循環(2) 或 不循環(0)，點下一首 = 重播
+                if (repeatState === 2 || repeatState === 0) {
+                    audioPlayer.currentTime = 0;
+                    audioPlayer.play();
+                    return;
+                }
+            }
+
+            // 列表循環(1)：找下一首
             if (!currentPlayingRow) return;
-            
-            // 嘗試找下一行
             let nextRow = currentPlayingRow.nextElementSibling;
-            
             if (nextRow && nextRow.classList.contains('song-row')) {
-                nextRow.click(); // 點擊下一首
-            } else if (loop) {
-                // 如果沒下一首了(到底)，且是循環模式，就點第一首
-                playFirstSong();
-            } else {
-                updatePlayIcon(false);
+                nextRow.click();
+            } else if (repeatState === 1) {
+                playFirstSong(); // 循環回第一首
             }
         }
 
-        // --- 8. 進度條與音量 ---
+        // ★★★ 8. 上一首邏輯 (你提供的代碼) ★★★
+        function playPrevSong() {
+            // 如果是單曲循環(2) 或 不循環(0)，點上一首 = 重播
+            if (repeatState === 2 || repeatState === 0) {
+                audioPlayer.currentTime = 0;
+                audioPlayer.play();
+                return;
+            }
+
+            // 列表循環(1)：找上一首
+            if (!currentPlayingRow) return;
+            let prevRow = currentPlayingRow.previousElementSibling;
+            if (prevRow && prevRow.classList.contains('song-row')) {
+                prevRow.click();
+            }
+        }
+
+        // ★★★ 9. 自動播放結束 ★★★
+        audioPlayer.onended = function() {
+            playNextSong(true); // 傳入 true 代表是自動播完的
+        };
+
+
+        // 10. 進度條與音量
         audioPlayer.ontimeupdate = function() {
             if (audioPlayer.duration) {
                 const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
