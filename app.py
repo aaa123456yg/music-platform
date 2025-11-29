@@ -316,6 +316,38 @@ def register():
     return render_template('register.html')
 # --- 後台管理系統路由 ---
 
+@app.context_processor
+def inject_playlists():
+    if current_user.is_authenticated:
+        # 撈出使用者建立的所有清單 (依建立時間排序)
+        my_playlists = Playlist.query.filter_by(user_id=current_user.user_id).order_by(Playlist.created_at.desc()).all()
+        return dict(my_playlists=my_playlists)
+    return dict(my_playlists=[])
+
+# ★★★ 2. 建立播放清單路由 ★★★
+@app.route('/create_playlist', methods=['POST'])
+@login_required
+def create_playlist():
+    name = request.form.get('name')
+    description = request.form.get('description')
+    # 取得 checkbox 的值 (有勾選是 'on'，沒勾選是 None)
+    is_public = True if request.form.get('is_public') == 'on' else False
+    
+    if name:
+        new_playlist = Playlist(
+            name=name,
+            description=description,
+            is_public=is_public,
+            user_id=current_user.user_id
+        )
+        db.session.add(new_playlist)
+        db.session.commit()
+        
+        # 建立成功後，回傳最新的清單列表 HTML 片段給 HTMX 更新側邊欄
+        # 這裡我們只回傳 <li>...</li> 的部分
+        return render_template('partials/playlist_items.html', my_playlists=Playlist.query.filter_by(user_id=current_user.user_id).order_by(Playlist.created_at.desc()).all())
+        
+    return '', 204 # 如果沒名字，什麼都不做
 # 1. 後台登入
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():

@@ -30,23 +30,48 @@
     </nav>
 
     <div class="playlist-section">
-        <div class="section-title">播放清單</div>
-        <ul class="playlist-list">
-            <li>
-                    <a href="#" 
-                       hx-get="/collection/tracks" 
-                       hx-target=".main-content" 
-                       hx-select=".main-content" 
-                       hx-swap="outerHTML" 
-                       hx-push-url="true"
-                       style="color: #b3b3b3; text-decoration: none; display: flex; align-items: center; gap: 12px;">
-                       
-                       <div style="width: 24px; height: 24px; background: linear-gradient(135deg, #450af5, #c4efd9); display: flex; align-items: center; justify-content: center; border-radius: 2px;">
-                           <i class="fa-solid fa-heart" style="font-size: 12px; color: white;"></i>
-                       </div>
-                       <span>已按讚的歌曲</span>
-                    </a>
-                </li>
-            </ul>
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div class="section-title" style="margin:0;">播放清單</div>
+            <button class="icon-btn" onclick="openModal()" title="建立播放清單">
+                <i class="fa-solid fa-plus"></i>
+            </button>
+        </div>
+
+        <ul class="playlist-list" id="user-playlists">
+            {% include 'partials/playlist_items.html' %}
+        </ul>
+    </div>
+</div>
+
+<div id="createPlaylistModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <h2>建立播放清單</h2>
+        
+        <form hx-post="/create_playlist" 
+              hx-target="#user-playlists" 
+              hx-swap="innerHTML"
+              onsubmit="closeModal()">
+            
+            <div class="input-group">
+                <label>名稱</label>
+                <input type="text" name="name" placeholder="我的播放清單 #1" required style="background: #333; border: none;">
+            </div>
+
+            <div class="input-group">
+                <label>描述 (選填)</label>
+                <textarea name="description" placeholder="這張清單的用途..." 
+                          style="width: 100%; height: 80px; background: #333; border: none; border-radius: 4px; color: white; padding: 10px; resize: none; font-family: inherit;"></textarea>
+            </div>
+
+            <div class="checkbox-group" style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <input type="checkbox" id="is_public" name="is_public" style="width: auto;">
+                <label for="is_public" style="margin: 0; font-weight: 400; cursor: pointer;">設為公開</label>
+            </div>
+
+            <div style="text-align: right;">
+                <button type="submit" class="btn-primary" style="width: auto; padding: 12px 32px;">建立</button>
+            </div>
+        </form>
     </div>
 </div>

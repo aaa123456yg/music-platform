@@ -178,3 +178,30 @@ function formatTime(seconds) {
     const sec = Math.floor(seconds % 60);
     return min + ":" + (sec < 10 ? "0" + sec : sec);
 }
+// --- 11. 彈跳視窗控制 (Modal) ---
+function openModal() {
+    const modal = document.getElementById("createPlaylistModal");
+    modal.style.display = "flex"; // 用 flex 才能置中
+}
+
+function closeModal() {
+    const modal = document.getElementById("createPlaylistModal");
+    modal.style.display = "none";
+}
+
+// 點擊視窗外部關閉 Modal
+window.onclick = function(event) {
+    const modal = document.getElementById("createPlaylistModal");
+    // 注意：這裡要保留原本的 dropdown 關閉邏輯，用 if 區分
+    if (event.target == modal) {
+        closeModal();
+    }
+    
+    // 原本的 dropdown 邏輯...
+    if (!event.target.closest('.user-btn')) {
+        var dropdowns = document.getElementsByClassName("dropdown-content");
+        for (var i = 0; i < dropdowns.length; i++) {
+            if (dropdowns[i].classList.contains('show')) dropdowns[i].classList.remove('show');
+        }
+    }
+}

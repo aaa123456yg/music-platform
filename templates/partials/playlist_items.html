@@ -1,0 +1,25 @@
+<li>
+    <a href="#" 
+       hx-get="/collection/tracks" 
+       hx-target=".main-content" 
+       hx-select=".main-content" 
+       hx-swap="outerHTML" 
+       hx-push-url="true"
+       style="color: #b3b3b3; text-decoration: none; display: flex; align-items: center; gap: 12px;">
+       <div style="width: 24px; height: 24px; background: linear-gradient(135deg, #450af5, #c4efd9); display: flex; align-items: center; justify-content: center; border-radius: 2px;">
+           <i class="fa-solid fa-heart" style="font-size: 12px; color: white;"></i>
+       </div>
+       <span>已按讚的歌曲</span>
+    </a>
+</li>
+
+{% for playlist in my_playlists %}
+<li>
+    <a href="#" class="playlist-link">
+        {{ playlist.name }}
+        {% if not playlist.is_public %}
+            <i class="fa-solid fa-lock" style="font-size: 0.7rem; margin-left: 8px; opacity: 0.5;" title="私人清單"></i>
+        {% endif %}
+    </a>
+</li>
+{% endfor %}
