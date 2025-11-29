@@ -205,33 +205,58 @@ window.onclick = function(event) {
         }
     }
 }
-// --- 12. 加入歌曲到播放清單邏輯 ---
+// --- 12. 加入歌曲到播放清單邏輯 (修正版) ---
 
-let currentSongIdToAdd = null; // 暫存現在要加哪首歌
+let currentSongIdToAdd = null; 
 
 function openAddToPlaylistModal(songId) {
+    // 1. 設定要加入的歌曲 ID
     currentSongIdToAdd = songId;
+    
+    // 2. 顯示 Modal
     const modal = document.getElementById("addToPlaylistModal");
-    modal.style.display = "flex";
+    if (modal) {
+        modal.style.display = "flex";
+    }
 }
 
 function closeAddToPlaylistModal() {
     const modal = document.getElementById("addToPlaylistModal");
-    modal.style.display = "none";
+    if (modal) {
+        modal.style.display = "none";
+    }
+    // ★★★ 關鍵：關閉時重置變數，避免卡住 ★★★
+    currentSongIdToAdd = null;
 }
 
 function submitAddToPlaylist(playlistId) {
-    if (!currentSongIdToAdd) return;
-
-    // 使用 HTMX 手動觸發請求
-    // 這裡我們直接用 htmx.ajax 發送 POST
-    htmx.ajax('POST', `/add_to_playlist/${playlistId}/${currentSongIdToAdd}`, {
-        target: '#main-content', // 這裡 target 設哪裡不重要，因為後端只回傳 script
-        swap: 'none' // 不替換任何內容，只執行回傳的 script (關閉視窗)
-    }).then(() => {
-        // 請求完成後，手動關閉視窗並顯示提示 (Flash message 會由後端處理，這裡只要關視窗)
+    if (!currentSongIdToAdd) {
+        alert("發生錯誤：找不到歌曲 ID");
         closeAddToPlaylistModal();
-        // 重新整理頁面以顯示 Flash Message (或者用更進階的 Toast)
-        location.reload(); 
+        return;
+    }
+
+    // ★★★ 改用標準 fetch API，不依賴 HTMX，控制更精準 ★★★
+    fetch(`/add_to_playlist/${playlistId}/${currentSongIdToAdd}`, {
+        method: 'POST'
+    })
+    .then(response => {
+        if (response.ok) {
+            // 成功：關閉視窗
+            closeAddToPlaylistModal();
+            
+            // (選用) 可以加一個簡單的提示，例如：
+            // alert("已成功加入播放清單！"); 
+            
+            // 注意：這裡我們不重新整理頁面 (location.reload)，以免音樂中斷
+        } else {
+            alert("加入失敗，請稍後再試。");
+            closeAddToPlaylistModal();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert("發生連線錯誤");
+        closeAddToPlaylistModal();
     });
 }

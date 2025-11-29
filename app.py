@@ -351,31 +351,52 @@ def create_playlist():
 
 # app.py - 加入歌曲到播放清單
 
+# app.py
+
 @app.route('/add_to_playlist/<int:playlist_id>/<int:song_id>', methods=['POST'])
 @login_required
 def add_to_playlist(playlist_id, song_id):
-    # 1. 檢查清單是否存在且屬於該使用者
     playlist = Playlist.query.filter_by(playlist_id=playlist_id, user_id=current_user.user_id).first()
     song = Song.query.get_or_404(song_id)
     
     if not playlist:
-        return "無權限或清單不存在", 403
+        return "Error", 403
 
-    # 2. 檢查是否已經在清單裡了 (避免重複加入)
-    if song in playlist.songs:
-        flash(f'歌曲已存在於 {playlist.name}', 'warning')
-    else:
-        # 3. 加入關聯
-        # 這裡我們需要手動處理 playlist_songs 表，因為有 track_order 欄位
-        # 為了簡化，我們先直接 append，SQLAlchemy 會處理中間表，但 track_order 預設會是 NULL
-        # 如果要嚴謹，可以查詢目前最大順序 + 1
+    if song not in playlist.songs:
         playlist.songs.append(song)
         db.session.commit()
-        flash(f'已將 {song.title} 加入 {playlist.name}', 'success')
     
-    # 加入後關閉 Modal (回傳一個空的 response 或觸發前端事件)
-    # 這裡我們回傳一個簡單的 script 讓前端知道要關閉視窗
-    return "<script>closeAddToPlaylistModal();</script>"
+    # ★★★ 修改這裡：直接回傳 204 (No Content)，代表成功 ★★★
+    return '', 204
+# app.py
+
+# app.py - 播放清單詳情頁
+
+@app.route('/playlist/<int:playlist_id>')
+@login_required
+def playlist_detail(playlist_id):
+    # 1. 取得清單，若找不到則 404
+    playlist = Playlist.query.get_or_404(playlist_id)
+    
+    # 2. 權限檢查：如果是私人清單且不是自己的，就禁止訪問
+    if not playlist.is_public and playlist.user_id != current_user.user_id:
+        flash('您沒有權限查看此清單', 'danger')
+        return redirect(url_for('index'))
+
+    # 3. 取得歌曲列表
+    songs = playlist.songs
+    song_count = len(songs)
+    
+    # 計算總時長
+    total_seconds = sum(s.duration_minutes * 60 + s.duration_seconds for s in songs)
+    total_duration = f"{total_seconds // 60} 分 {total_seconds % 60} 秒"
+
+    # 4. HTMX 判斷
+    if request.headers.get('HX-Request'):
+        return render_template('playlist_content.html', playlist=playlist, songs=songs, song_count=song_count, total_duration=total_duration)
+    
+    return render_template('playlist_detail.html', playlist=playlist, songs=songs, song_count=song_count, total_duration=total_duration)
+
 
 # 1. 後台登入
 @app.route('/admin/login', methods=['GET', 'POST'])

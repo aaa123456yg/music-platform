@@ -15,8 +15,16 @@
 
 {% for playlist in my_playlists %}
 <li>
-    <a href="#" class="playlist-link">
+    <a href="#" 
+       class="playlist-link"
+       hx-get="/playlist/{{ playlist.playlist_id }}"
+       hx-target="#main-content" 
+       hx-select="#main-content" 
+       hx-swap="outerHTML" 
+       hx-push-url="true">
+       
         {{ playlist.name }}
+        
         {% if not playlist.is_public %}
             <i class="fa-solid fa-lock" style="font-size: 0.7rem; margin-left: 8px; opacity: 0.5;" title="私人清單"></i>
         {% endif %}

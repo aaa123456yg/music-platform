@@ -1,0 +1,138 @@
+<div class="main-content" style="position: relative; overflow-y: auto;">
+    
+    <header class="top-bar transparent-bar" style="position: absolute; width: 100%; top: 0; left: 0; background: rgba(0,0,0,0.3); border: none; z-index: 10;">
+        <div class="nav-buttons">
+            <button class="circle-btn" onclick="history.back()" title="上一頁"><i class="fa-solid fa-chevron-left"></i></button>
+            <button class="circle-btn" onclick="history.forward()" title="下一頁"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+
+        <div class="search-container">
+            <form action="/search" method="GET" class="search-form"
+                  hx-get="/search" hx-target="#main-content" hx-select="#main-content" hx-push-url="true">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" name="q" placeholder="想播放什麼內容？" autocomplete="off">
+            </form>
+        </div>
+
+        <div class="user-menu-container">
+            <button class="user-btn" onclick="toggleDropdown()">
+                <div class="avatar-circle"><i class="fa-solid fa-user"></i></div>
+                <span class="username">{{ current_user.display_name }}</span>
+                <i class="fa-solid fa-caret-down"></i>
+            </button>
+            <div id="userDropdown" class="dropdown-content">
+                <a href="#" class="dropdown-item">個人檔案</a>
+                <div class="divider"></div>
+                <a href="/logout" class="dropdown-item">登出</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="playlist-hero" 
+         style="
+            background: linear-gradient(to bottom, #404040, #181818);
+            height: 340px;
+            min-height: 40vh;
+            display: flex;
+            align-items: flex-end;
+            padding: 24px 32px;
+            position: relative;
+            z-index: 1;
+         ">
+        
+        <div style="
+            width: 232px; 
+            height: 232px; 
+            background-color: #282828;
+            box-shadow: 0 4px 60px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 24px;
+            flex-shrink: 0;
+        ">
+            <i class="fa-solid fa-music" style="font-size: 5rem; color: #7f7f7f;"></i>
+        </div>
+
+        <div class="artist-info" style="width: 100%;">
+            <span style="font-size: 0.9rem; font-weight: 700; text-transform: uppercase;">播放清單</span>
+            <h1 style="font-size: 4rem; font-weight: 900; margin: 8px 0; line-height: 1; color: white; text-shadow: none;">
+                {{ playlist.name }}
+            </h1>
+            <p style="color: #b3b3b3; font-size: 0.9rem; margin: 0 0 10px 0;">{{ playlist.description }}</p>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 700;">
+                <span style="font-weight: 400;">{{ current_user.display_name }} • {{ song_count }} 首歌曲 • {{ total_duration }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-area" style="background: linear-gradient(to bottom, #1a1a1a 0%, #121212 200px); padding: 24px 32px;">
+        
+        <div class="action-bar">
+            <button class="play-btn-large" onclick="playFirstSong()"><i class="fa-solid fa-play"></i></button>
+            <button class="action-icon"><i class="fa-solid fa-ellipsis"></i></button>
+        </div>
+
+        <table class="song-table">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">#</th>
+                    <th>標題</th>
+                    <th>專輯</th>
+                    <th style="width: 80px;"></th> <th style="text-align: right; padding-right: 20px; width: 100px;"><i class="fa-regular fa-clock"></i></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for song in songs %}
+                <tr class="song-row" 
+                    onclick="playMusic('{{ song.audio_file_url }}', '{{ song.title }}', '{{ song.album.artist.name }}', '{{ song.album.cover_art_url }}', this)">
+                    
+                    <td class="song-index">
+                        <span class="index-num">{{ loop.index }}</span>
+                        <i class="fa-solid fa-play index-play-icon"></i>
+                    </td>
+                    
+                    <td>
+                        <div class="song-title-row">
+                            <div class="song-item-flex">
+                                {% if song.album.cover_art_url %}
+                                    <img src="{{ song.album.cover_art_url }}" class="mini-cover">
+                                {% endif %}
+                                <div>
+                                    <span class="song-name-highlight">{{ song.title }}</span>
+                                    <span class="song-artist-sub">{{ song.album.artist.name }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    
+                    <td>{{ song.album.title }}</td>
+                    
+                    <td style="text-align: center;">
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 15px;" onclick="event.stopPropagation()">
+                            
+                            {% if song in current_user.liked_songs %}
+                                <i class="fa-solid fa-heart like-btn" style="color: #1ed760; cursor: pointer;" hx-post="/toggle_like/{{ song.song_id }}" hx-swap="outerHTML"></i>
+                            {% else %}
+                                <i class="fa-regular fa-heart like-btn" style="cursor: pointer;" hx-post="/toggle_like/{{ song.song_id }}" hx-swap="outerHTML"></i>
+                            {% endif %}
+                        </div>
+                    </td>
+
+                    <td style="text-align: right; padding-right: 20px; color: #b3b3b3;">
+                        {{ song.duration_minutes }}:{{ '%02d' % song.duration_seconds }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        {% if not songs %}
+            <div style="text-align: center; margin-top: 50px; color: #b3b3b3;">
+                <h3>這張清單是空的</h3>
+                <p>去找些喜歡的歌加入吧！</p>
+            </div>
+        {% endif %}
+
+    </div>
+</div>
