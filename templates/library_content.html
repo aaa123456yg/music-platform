@@ -32,16 +32,16 @@
         
         <h2 style="margin-bottom: 20px;">你的資料庫</h2>
         
-        <div style="display: flex; gap: 10px; margin-bottom: 24px;">
-            <span style="background: #333; padding: 6px 12px; border-radius: 16px; font-size: 0.85rem; cursor: pointer; color: white;">全部</span>
-            <span style="background: #222; padding: 6px 12px; border-radius: 16px; font-size: 0.85rem; cursor: pointer; color: #b3b3b3;">播放清單</span>
-            <span style="background: #222; padding: 6px 12px; border-radius: 16px; font-size: 0.85rem; cursor: pointer; color: #b3b3b3;">藝人</span>
-            <span style="background: #222; padding: 6px 12px; border-radius: 16px; font-size: 0.85rem; cursor: pointer; color: #b3b3b3;">專輯</span>
+        <div class="filter-buttons" style="display: flex; gap: 10px; margin-bottom: 24px;">
+            <button class="filter-btn active" onclick="filterLibrary('all', this)">全部</button>
+            <button class="filter-btn" onclick="filterLibrary('playlist', this)">播放清單</button>
+            <button class="filter-btn" onclick="filterLibrary('artist', this)">藝人</button>
+            <button class="filter-btn" onclick="filterLibrary('album', this)">專輯</button>
         </div>
 
         <div class="cards-container">
             
-            <div class="card" 
+            <div class="card" data-type="playlist"
                  hx-get="/collection/tracks" 
                  hx-target="#main-content" 
                  hx-select="#main-content" 
@@ -59,7 +59,7 @@
             </div>
 
             {% for playlist in playlists %}
-            <div class="card" 
+            <div class="card" data-type="playlist"
                  hx-get="/playlist/{{ playlist.playlist_id }}" 
                  hx-target="#main-content" 
                  hx-select="#main-content" 
@@ -74,7 +74,7 @@
             {% endfor %}
 
             {% for album in albums %}
-            <div class="card" 
+            <div class="card" data-type="album"
                  hx-get="/album/{{ album.album_id }}" 
                  hx-target="#main-content" 
                  hx-select="#main-content" 
@@ -93,7 +93,7 @@
             {% endfor %}
 
             {% for artist in artists %}
-            <div class="card"
+            <div class="card" data-type="artist"
                  hx-get="/artist/{{ artist.artist_id }}"
                  hx-target="#main-content"  
                  hx-select="#main-content" 

@@ -569,3 +569,24 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 12px
     transform: scale(1.04);
     content: '取消追蹤'; /* 進階技巧：滑鼠移上去可以變文字，這裡先不加 */
 }
+/* 篩選按鈕樣式 */
+.filter-btn {
+    background-color: #2a2a2a;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-btn:hover {
+    background-color: #3e3e3e;
+}
+
+.filter-btn.active {
+    background-color: #ffffff;
+    color: #000000;
+    font-weight: 700;
+}

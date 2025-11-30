@@ -347,3 +347,19 @@ function closeModal() {
     const modal = document.getElementById("createPlaylistModal");
     if(modal) modal.style.display = "none";
 }
+// --- 14. 資料庫篩選功能 ---
+function filterLibrary(type, btn) {
+    // 1. 切換按鈕樣式
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // 2. 篩選卡片
+    const cards = document.querySelectorAll('.cards-container .card');
+    cards.forEach(card => {
+        if (type === 'all' || card.getAttribute('data-type') === type) {
+            card.style.display = 'block'; // 顯示
+        } else {
+            card.style.display = 'none';  // 隱藏
+        }
+    });
+}
