@@ -1,5 +1,3 @@
-/* static/script.js (佇列升級版) */
-
 // --- 1. 下拉選單控制 ---
 function toggleDropdown() { 
     const dropdown = document.getElementById("userDropdown");
@@ -15,292 +13,294 @@ window.onclick = function(event) {
     }
 }
 
-// --- 2. 播放器變數 ---
-const audioPlayer = document.getElementById('audio-player');
-const playIcon = document.getElementById('main-play-icon');
-const progressBar = document.getElementById('progress-bar');
-const currTimeDisplay = document.getElementById('current-time');
-const totTimeDisplay = document.getElementById('total-duration');
+// --- 2. 播放器變數與狀態 ---
+function getPlayerElements() {
+    return {
+        audio: document.getElementById('audio-player'),
+        icon: document.getElementById('main-play-icon'),
+        bar: document.getElementById('progress-bar'),
+        currTime: document.getElementById('current-time'),
+        totTime: document.getElementById('total-duration'),
+        cover: document.getElementById('player-cover'),
+        title: document.getElementById('player-title'),
+        artist: document.getElementById('player-artist'), // <a> 標籤
+        repeatBtn: document.getElementById('repeat-btn')
+    };
+}
 
-const playerCover = document.getElementById('player-cover');
-const playerTitle = document.getElementById('player-title');
-const playerArtist = document.getElementById('player-artist');
-const repeatBtn = document.getElementById('repeat-btn');
+let currentQueue = [];
+let currentSongIndex = -1;
+let repeatState = 0; // 0:不循環, 1:列表循環, 2:單曲循環
 
-// ★★★ 新增：記憶體內的播放佇列 ★★★
-let currentQueue = [];      // 存放整張歌單的資訊 [{url, title, artist, cover}, ...]
-let currentSongIndex = -1;  // 目前播到第幾首
-let repeatState = 0;        // 0:不循環, 1:列表循環, 2:單曲循環
-
-// --- 3. 播放指定歌曲 (接收 artistId) ---
+// --- 3. 播放指定歌曲 (手動點擊入口) ---
 function playMusic(url, title, artist, coverUrl, rowElement, artistId) {
-    // 1. 重新抓取 DOM
-    const audioPlayer = document.getElementById('audio-player');
-    const playerTitle = document.getElementById('player-title');
-    const playerArtist = document.getElementById('player-artist'); // 這是 <a> 標籤
-    const playerCover = document.getElementById('player-cover');
-
-    // 2. 如果是手動點擊，重建佇列
+    // 1. 如果是手動點擊，重建播放佇列
     if (rowElement) {
         buildQueueFromDOM(rowElement);
     }
 
-    // 3. 設定音訊與文字
-    audioPlayer.src = url;
-    playerTitle.innerText = title;
-    playerArtist.innerText = artist;
-    
-    // ★★★ 關鍵：設定演出者連結 ★★★
-    if (artistId && playerArtist) {
-        // 移除舊的事件監聽器 (避免重複)
-        const newArtistLink = playerArtist.cloneNode(true);
-        playerArtist.parentNode.replaceChild(newArtistLink, playerArtist);
+    // 2. 建構歌曲物件
+    const song = {
+        url: url,
+        title: title,
+        artist: artist,
+        cover: coverUrl,
+        artistId: artistId
+    };
+
+    // 3. 統一呼叫播放函式
+    loadAndPlay(song);
+}
+
+// --- 核心：載入並播放 (所有播放動作都走這裡) ---
+function loadAndPlay(song) {
+    const p = getPlayerElements();
+    if (!p.audio) return;
+
+    // 1. 設定音訊
+    p.audio.src = song.url;
+
+    // 2. 更新文字與封面
+    if (p.title) p.title.innerText = song.title;
+    if (p.artist) p.artist.innerText = song.artist;
+
+    if (p.cover) {
+        if (song.cover && song.cover !== 'None') {
+            p.cover.src = song.cover;
+            p.cover.style.display = 'block';
+        } else {
+            p.cover.style.display = 'none';
+        }
+    }
+
+    // 3. ★★★ 關鍵：更新演出者連結 (上一首/下一首也能更新連結了) ★★★
+    if (p.artist && song.artistId) {
+        // 複製節點以移除舊事件
+        const newLink = p.artist.cloneNode(true);
+        p.artist.parentNode.replaceChild(newLink, p.artist);
         
-        // 綁定新的點擊事件 (使用 HTMX API)
-        newArtistLink.onclick = function(e) {
-            e.preventDefault(); // 阻止 href="#" 跳轉
-            htmx.ajax('GET', `/artist/${artistId}`, {
+        // 設定新連結
+        newLink.href = "#"; // 防止跳轉
+        newLink.style.cursor = "pointer";
+        
+        // 綁定 HTMX 行為
+        newLink.onclick = function(e) {
+            e.preventDefault();
+            htmx.ajax('GET', `/artist/${song.artistId}`, {
                 target: '#main-content',
                 select: '#main-content',
                 swap: 'outerHTML'
             }).then(() => {
-                // 手動更新網址列
-                history.pushState(null, '', `/artist/${artistId}`);
+                history.pushState(null, '', `/artist/${song.artistId}`);
             });
         };
     }
 
-    if (coverUrl && coverUrl !== 'None') {
-        playerCover.src = coverUrl;
-        playerCover.style.display = 'block';
-    } else {
-        playerCover.style.display = 'none';
+    // 4. 播放
+    // 使用 Promise 避免報錯
+    const playPromise = p.audio.play();
+    if (playPromise !== undefined) {
+        playPromise
+            .then(() => updatePlayIcon(true))
+            .catch(err => console.log("播放被瀏覽器阻擋:", err));
     }
 
-    // 視覺標記
-    if (currentPlayingRow) currentPlayingRow.classList.remove('playing');
-    if (rowElement) {
-        currentPlayingRow = rowElement;
-        currentPlayingRow.classList.add('playing');
-    }
-
-    audioPlayer.play();
-    updatePlayIcon(true);
-    syncVisuals();
+    // 5. 同步視覺 (變綠色)
+    syncVisuals(song.title);
 }
 
-// Update loadAndPlay to handle the link
-function loadAndPlay(url, title, artist, coverUrl, artistId) {
-    const audioPlayer = document.getElementById('audio-player');
-    const playerTitle = document.getElementById('player-title');
-    const playerArtist = document.getElementById('player-artist');
-    const playerCover = document.getElementById('player-cover');
-
-    audioPlayer.src = url;
-    
-    if (playerTitle) playerTitle.innerText = title;
-    
-    if (playerArtist) {
-        playerArtist.innerText = artist;
-        // ★★★ NEW: Update the link href ★★★
-        // Use HTMX logic manually if you want SPA behavior, or just simple href
-        // Simple href:
-        // playerArtist.href = `/artist/${artistId}`;
-        
-        // SPA behavior (HTMX-like):
-        playerArtist.setAttribute('hx-get', `/artist/${artistId}`);
-        playerArtist.setAttribute('hx-target', '#main-content');
-        playerArtist.setAttribute('hx-select', '#main-content');
-        playerArtist.setAttribute('hx-swap', 'outerHTML');
-        playerArtist.setAttribute('hx-push-url', 'true');
-        // We need to re-process this element with HTMX because we changed attributes dynamically
-        htmx.process(playerArtist);
-    }
-    
-    if (playerCover) {
-        if (coverUrl && coverUrl !== 'None') {
-            playerCover.src = coverUrl;
-            playerCover.style.display = 'block';
-        } else {
-            playerCover.style.display = 'none';
-        }
-    }
-
-    audioPlayer.play();
-    updatePlayIcon(true);
-    syncVisuals();
-}
-
+// --- 輔助：從 DOM 建立佇列 ---
 function buildQueueFromDOM(clickedRow) {
     currentQueue = [];
     const rows = document.querySelectorAll('.song-row');
     
     rows.forEach((row, index) => {
+        // 解析 onclick 屬性
         const onclickText = row.getAttribute('onclick');
-        const parts = onclickText.split("'"); 
-        
-        // playMusic('url', 'title', 'artist', 'cover', this, 'artistId')
-        // index: 1=url, 3=title, 5=artist, 7=cover, 11=artistId
-        
-        const songData = {
-            url: parts[1],
-            title: parts[3],
-            artist: parts[5],
-            cover: parts[7],
-            artistId: parts[11] // ★★★ 抓取第 6 個參數 ★★★
-        };
-        currentQueue.push(songData);
+        if (!onclickText) return;
+
+        const parts = onclickText.split("'");
+        // 格式: playMusic('url', 'title', 'artist', 'cover', this, 'id')
+        // index: 1=url, 3=title, 5=artist, 7=cover, 9=artistId
+        if (parts.length >= 10) {
+            currentQueue.push({
+                url: parts[1],
+                title: parts[3],
+                artist: parts[5],
+                cover: parts[7],
+                artistId: parts[9]
+            });
+        }
 
         if (row === clickedRow) {
             currentSongIndex = index;
         }
     });
+    console.log(`佇列已建立: ${currentQueue.length} 首`);
 }
 
-// 輔助函式：載入並播放
-function loadAndPlay(url, title, artist, coverUrl) {
-    const audioPlayer = document.getElementById('audio-player'); // 重新抓取確保安全
-    const playerTitle = document.getElementById('player-title');
-    const playerArtist = document.getElementById('player-artist');
-    const playerCover = document.getElementById('player-cover');
+// --- 4. 上/下一首邏輯 ---
+function playNextSong(autoPlay = false) {
+    if (currentQueue.length === 0) return;
 
-    audioPlayer.src = url;
-    
-    if (playerTitle) playerTitle.innerText = title;
-    if (playerArtist) playerArtist.innerText = artist;
-    
-    if (playerCover) {
-        if (coverUrl && coverUrl !== 'None') {
-            playerCover.src = coverUrl;
-            playerCover.style.display = 'block';
+    const p = getPlayerElements();
+
+    // 單曲循環
+    if ((autoPlay || !autoPlay) && repeatState === 2) {
+        p.audio.currentTime = 0;
+        p.audio.play();
+        return;
+    }
+
+    let nextIndex = currentSongIndex + 1;
+    if (nextIndex >= currentQueue.length) {
+        if (repeatState === 1) {
+            nextIndex = 0; // 列表循環回到頭
         } else {
-            playerCover.style.display = 'none';
+            updatePlayIcon(false); // 停止
+            return;
         }
     }
 
-    audioPlayer.play();
-    updatePlayIcon(true);
-    syncVisuals(); // 同步列表綠色字
+    currentSongIndex = nextIndex;
+    loadAndPlay(currentQueue[nextIndex]);
 }
 
-// --- 4. 播放第一首歌 ---
+function playPrevSong() {
+    if (currentQueue.length === 0) return;
+
+    const p = getPlayerElements();
+
+    // 單曲循環 -> 重播
+    if (repeatState === 2) {
+        p.audio.currentTime = 0;
+        p.audio.play();
+        return;
+    }
+
+    // 如果播放超過 3 秒，按上一首通常是「重頭播」
+    if (p.audio.currentTime > 3) {
+        p.audio.currentTime = 0;
+        p.audio.play();
+        return;
+    }
+
+    // 真的切換到上一首
+    let prevIndex = currentSongIndex - 1;
+    if (prevIndex < 0) prevIndex = 0; // 已經是第一首就重播第一首
+
+    currentSongIndex = prevIndex;
+    loadAndPlay(currentQueue[prevIndex]);
+}
+
+// --- 5. 視覺同步 (變綠色) ---
+function syncVisuals(playingTitle) {
+    // 如果沒傳參數，嘗試從佇列抓
+    if (!playingTitle && currentQueue.length > 0 && currentSongIndex !== -1) {
+        playingTitle = currentQueue[currentSongIndex].title;
+    }
+    if (!playingTitle) return;
+
+    // 移除所有綠色
+    document.querySelectorAll('.song-name-highlight').forEach(el => el.style.color = '');
+    
+    // 加上綠色 (使用 trim 去除空白，增加準確度)
+    const rows = document.querySelectorAll('.song-row');
+    rows.forEach(row => {
+        const titleEl = row.querySelector('.song-name-highlight');
+        if (titleEl && titleEl.innerText.trim() === playingTitle.trim()) {
+            titleEl.style.color = '#1ed760';
+        }
+    });
+}
+
+// --- 6. 其他播放控制 ---
 function playFirstSong() {
     const firstRow = document.querySelector('.song-row');
     if (firstRow) firstRow.click();
 }
 
-// --- 5. 切換播放/暫停 ---
 function togglePlay() {
-    if (audioPlayer.paused) {
-        audioPlayer.play();
+    const p = getPlayerElements();
+    if (p.audio.paused) {
+        p.audio.play();
         updatePlayIcon(true);
     } else {
-        audioPlayer.pause();
+        p.audio.pause();
         updatePlayIcon(false);
     }
 }
 
 function updatePlayIcon(isPlaying) {
+    const icon = document.getElementById('main-play-icon');
+    if (!icon) return;
     if (isPlaying) {
-        playIcon.classList.remove('fa-circle-play');
-        playIcon.classList.add('fa-circle-pause');
+        icon.classList.remove('fa-circle-play');
+        icon.classList.add('fa-circle-pause');
     } else {
-        playIcon.classList.remove('fa-circle-pause');
-        playIcon.classList.add('fa-circle-play');
+        icon.classList.remove('fa-circle-pause');
+        icon.classList.add('fa-circle-play');
     }
 }
 
-// --- 6. 切換循環模式 ---
 function toggleRepeat() {
-    repeatState = (repeatState + 1) % 3; 
-    
-    if(repeatBtn) {
-        repeatBtn.classList.remove('active');
-        repeatBtn.classList.remove('repeat-one');
-
-        if (repeatState === 1) {
-            repeatBtn.classList.add('active');
-            repeatBtn.title = "列表循環";
-        } else if (repeatState === 2) {
-            repeatBtn.classList.add('active');
-            repeatBtn.classList.add('repeat-one');
-            repeatBtn.title = "單曲循環";
-        } else {
-            repeatBtn.title = "不循環";
-        }
+    const btn = document.getElementById('repeat-btn');
+    if (!btn) return;
+    repeatState = (repeatState + 1) % 3;
+    btn.classList.remove('active');
+    btn.classList.remove('repeat-one');
+    if (repeatState === 1) {
+        btn.classList.add('active');
+        btn.title = "列表循環";
+    } else if (repeatState === 2) {
+        btn.classList.add('active');
+        btn.classList.add('repeat-one');
+        btn.title = "單曲循環";
+    } else {
+        btn.title = "不循環";
     }
 }
 
-// --- 7. ★★★ 下一首邏輯 (改用記憶體佇列) ★★★ ---
-function playNextSong(autoPlay = false) {
-    if (currentQueue.length === 0) return; // 沒歌單
-
-    // 單曲循環
-    if ((autoPlay || !autoPlay) && repeatState === 2) {
-        audioPlayer.currentTime = 0;
-        audioPlayer.play();
-        return;
+// --- 7. 事件監聽 ---
+// 頁面載入後綁定
+document.addEventListener('DOMContentLoaded', () => {
+    const p = getPlayerElements();
+    if (p.audio) {
+        p.audio.onended = function() { playNextSong(true); };
+        p.audio.ontimeupdate = handleTimeUpdate;
     }
+});
 
-    // 計算下一首的 Index
-    let nextIndex = currentSongIndex + 1;
-
-    // 如果到底了
-    if (nextIndex >= currentQueue.length) {
-        if (repeatState === 1) {
-            nextIndex = 0; // 列表循環：回到第一首
-        } else {
-            updatePlayIcon(false); // 不循環：停止
-            return;
-        }
+// HTMX 換頁後重新綁定 (並同步綠色文字)
+document.body.addEventListener('htmx:afterSwap', function() {
+    const p = getPlayerElements();
+    if (p.audio) {
+        p.audio.onended = function() { playNextSong(true); };
+        p.audio.ontimeupdate = handleTimeUpdate;
+        syncVisuals(); // 換頁後立刻檢查有沒有正在播的歌
     }
+});
 
-    // 播放下一首
-    currentSongIndex = nextIndex;
-    const nextSong = currentQueue[nextIndex];
-    loadAndPlay(nextSong.url, nextSong.title, nextSong.artist, nextSong.cover, nextSong.artistId);
+function handleTimeUpdate() {
+    const p = getPlayerElements();
+    if (p.audio && p.audio.duration) {
+        const progress = (p.audio.currentTime / p.audio.duration) * 100;
+        p.bar.value = progress;
+        p.currTime.innerText = formatTime(p.audio.currentTime);
+        p.totTime.innerText = formatTime(p.audio.duration);
+    }
 }
-
-// --- 8. ★★★ 上一首邏輯 (改用記憶體佇列) ★★★ ---
-function playPrevSong() {
-    if (currentQueue.length === 0) return;
-
-    if (repeatState === 2) { // 單曲循環
-        audioPlayer.currentTime = 0;
-        audioPlayer.play();
-        return;
-    }
-
-    let prevIndex = currentSongIndex - 1;
-    if (prevIndex < 0) prevIndex = 0; // 已經是第一首就重播第一首
-
-    currentSongIndex = prevIndex;
-    const prevSong = currentQueue[prevIndex];
-    loadAndPlay(prevSong.url, prevSong.title, prevSong.artist, prevSong.cover, nextSong.artistId);
-}
-
-// --- 9. 自動播放結束 ---
-audioPlayer.onended = function() {
-    playNextSong(true);
-};
-
-// --- 10. 進度條與音量 ---
-audioPlayer.ontimeupdate = function() {
-    if (audioPlayer.duration) {
-        const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
-        progressBar.value = progress;
-        currTimeDisplay.innerText = formatTime(audioPlayer.currentTime);
-        totTimeDisplay.innerText = formatTime(audioPlayer.duration);
-    }
-};
 
 function seekAudio() {
-    const seekTime = (progressBar.value / 100) * audioPlayer.duration;
-    audioPlayer.currentTime = seekTime;
+    const p = getPlayerElements();
+    const seekTime = (p.bar.value / 100) * p.audio.duration;
+    p.audio.currentTime = seekTime;
 }
 
 function setVolume() {
-    audioPlayer.volume = document.getElementById('volume-bar').value;
+    const p = getPlayerElements();
+    const vol = document.getElementById('volume-bar');
+    p.audio.volume = vol.value;
 }
 
 function formatTime(seconds) {
@@ -309,35 +309,7 @@ function formatTime(seconds) {
     return min + ":" + (sec < 10 ? "0" + sec : sec);
 }
 
-// --- 11. ★★★ 視覺同步 (HTMX 換頁後自動執行) ★★★ ---
-// 當你切換頁面回來時，這個函式會幫你把「正在播放」的那首歌名變綠色
-function syncVisuals() {
-    // 先移除所有綠色標記
-    document.querySelectorAll('.song-name-highlight').forEach(el => el.style.color = '');
-
-    // 如果目前沒有播放清單，就不做
-    if (currentQueue.length === 0 || currentSongIndex === -1) return;
-
-    // 取得目前正在播的歌資訊
-    const currentSong = currentQueue[currentSongIndex];
-
-    // 掃描現在畫面上的列表，看看有沒有這首歌
-    const rows = document.querySelectorAll('.song-row');
-    rows.forEach(row => {
-        // 簡單比對：看歌名是否一樣
-        const titleEl = row.querySelector('.song-name-highlight');
-        if (titleEl && titleEl.innerText === currentSong.title) {
-            titleEl.style.color = '#1ed760'; // 標記綠色
-        }
-    });
-}
-
-// 監聽 HTMX 換頁事件，每次換頁完都同步一次視覺
-document.body.addEventListener('htmx:afterSwap', function() {
-    syncVisuals();
-});
-
-// --- 12. 彈跳視窗邏輯 (加入清單) ---
+// --- 8. 彈跳視窗邏輯 ---
 let currentSongIdToAdd = null; 
 function openAddToPlaylistModal(songId) {
     currentSongIdToAdd = songId;
@@ -367,7 +339,6 @@ function submitAddToPlaylist(playlistId) {
     });
 }
 
-// --- 13. 建立清單 Modal ---
 function openModal() {
     const modal = document.getElementById("createPlaylistModal");
     if(modal) modal.style.display = "flex";
