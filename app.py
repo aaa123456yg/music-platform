@@ -207,7 +207,42 @@ def toggle_like(song_id):
             </i>
         '''
 
-# app.py
+# app.py - 追蹤/取消追蹤演出者
+
+@app.route('/toggle_follow/<int:artist_id>', methods=['POST'])
+@login_required
+def toggle_follow(artist_id):
+    artist = Artist.query.get_or_404(artist_id)
+    
+    # 判斷邏輯：已追蹤就取消，沒追蹤就加入
+    if artist in current_user.followed_artists:
+        current_user.followed_artists.remove(artist)
+        is_following = False
+    else:
+        current_user.followed_artists.append(artist)
+        is_following = True
+        
+    db.session.commit()
+    
+    # 回傳按鈕 HTML 給 HTMX 替換
+    if is_following:
+        # 狀態：正在追蹤 (顯示為實心或亮色邊框，文字變更)
+        return f'''
+            <button class="follow-btn following" 
+                    hx-post="/toggle_follow/{artist.artist_id}" 
+                    hx-swap="outerHTML">
+                正在追蹤
+            </button>
+        '''
+    else:
+        # 狀態：未追蹤 (原本的空心樣式)
+        return f'''
+            <button class="follow-btn" 
+                    hx-post="/toggle_follow/{artist.artist_id}" 
+                    hx-swap="outerHTML">
+                追蹤
+            </button>
+        '''
 
 # app.py
 

@@ -551,3 +551,21 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 12px
 
 .player-volume { display: flex; justify-content: flex-end; align-items: center; gap: 10px; color: #b3b3b3; }
 #volume-bar { width: 100px; }
+
+/* --- 追蹤按鈕樣式補充 --- */
+
+/* 正在追蹤的狀態 (Following) */
+.follow-btn.following {
+    border-color: #1ed760; /* 綠色邊框 */
+    color: #1ed760;        /* 綠色文字 */
+    /* 或者你可以選用實心背景：
+    background-color: rgba(255, 255, 255, 0.1); 
+    border-color: white;
+    */
+}
+
+.follow-btn.following:hover {
+    border-color: #1fdf64;
+    transform: scale(1.04);
+    content: '取消追蹤'; /* 進階技巧：滑鼠移上去可以變文字，這裡先不加 */
+}

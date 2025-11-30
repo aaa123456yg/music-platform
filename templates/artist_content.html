@@ -48,7 +48,20 @@
         
         <div class="action-bar">
             <button class="play-btn-large" onclick="playFirstSong()"><i class="fa-solid fa-play"></i></button>
-            <button class="follow-btn">追蹤</button>
+            
+            {% if artist in current_user.followed_artists %}
+                <button class="follow-btn following" 
+                        hx-post="/toggle_follow/{{ artist.artist_id }}" 
+                        hx-swap="outerHTML">
+                    追蹤中
+                </button>
+            {% else %}
+                <button class="follow-btn" 
+                        hx-post="/toggle_follow/{{ artist.artist_id }}" 
+                        hx-swap="outerHTML">
+                    追蹤
+                </button>
+            {% endif %}
             <button class="action-icon"><i class="fa-solid fa-ellipsis"></i></button>
         </div>
 
