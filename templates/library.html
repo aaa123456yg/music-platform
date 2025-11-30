@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>你的資料庫 - MusicPlatform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=31">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body class="main-body" hx-history-elt="#main-content">
+
+    {% include 'sidebar.html' %}
+
+    {% include 'library_content.html' %}
+
+    <div class="player-bar">
+        <div class="player-info">
+            <img id="player-cover" src="" alt="" class="player-cover-img" style="display:none;">
+            <div class="player-text">
+                <span id="player-title" class="player-title"></span>
+                <a id="player-artist" href="#" class="player-artist" style="text-decoration: none; color: #b3b3b3;"></a>
+            </div>
+        </div>
+        <div class="player-controls">
+            <div class="control-buttons">
+                <button class="control-btn"><i class="fa-solid fa-shuffle"></i></button>
+                <button class="control-btn" onclick="playPrevSong()" title="上一首"><i class="fa-solid fa-backward-step"></i></button>
+                <button class="control-btn play-pause-btn" onclick="togglePlay()"><i class="fa-solid fa-circle-play" id="main-play-icon"></i></button>
+                <button class="control-btn" onclick="playNextSong(false)" title="下一首"><i class="fa-solid fa-forward-step"></i></button>
+                <button class="control-btn" id="repeat-btn" onclick="toggleRepeat()" title="切換循環模式"><i class="fa-solid fa-repeat"></i></button>
+            </div>
+            <div class="progress-container">
+                <span id="current-time">0:00</span>
+                <input type="range" id="progress-bar" value="0" min="0" max="100" oninput="seekAudio()">
+                <span id="total-duration">0:00</span>
+            </div>
+        </div>
+        <div class="player-volume">
+            <i class="fa-solid fa-volume-high"></i>
+            <input type="range" id="volume-bar" min="0" max="1" step="0.1" value="1" oninput="setVolume()">
+        </div>
+        <audio id="audio-player"></audio>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}?v=2"></script>
+</body>
+</html>

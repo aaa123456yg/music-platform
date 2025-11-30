@@ -517,6 +517,32 @@ def delete_playlist(playlist_id):
     resp.headers['HX-Location'] = '/'
     return resp
 
+# app.py - 你的資料庫頁面
+
+@app.route('/library')
+@login_required
+def library():
+    # 1. 撈取所有相關資料
+    my_playlists = Playlist.query.filter_by(user_id=current_user.user_id).order_by(Playlist.created_at.desc()).all()
+    liked_albums = current_user.liked_albums
+    followed_artists = current_user.followed_artists
+    liked_songs_count = len(current_user.liked_songs)
+    
+    # 2. HTMX 請求：回傳局部內容
+    if request.headers.get('HX-Request'):
+        return render_template('library_content.html', 
+                               playlists=my_playlists, 
+                               albums=liked_albums, 
+                               artists=followed_artists,
+                               liked_songs_count=liked_songs_count)
+    
+    # 3. 一般請求：回傳完整頁面
+    return render_template('library.html', 
+                           playlists=my_playlists, 
+                           albums=liked_albums, 
+                           artists=followed_artists,
+                           liked_songs_count=liked_songs_count)
+
 # 1. 後台登入
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():

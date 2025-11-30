@@ -25,7 +25,16 @@
                     <i class="fa-solid fa-magnifying-glass"></i> 搜尋
                 </a>
             </li>
-            <li><a href="#"><i class="fa-solid fa-book"></i> 你的資料庫</a></li>
+            <li>
+                <a href="/" 
+                   hx-get="/library" 
+                   hx-target="#main-content" 
+                   hx-select="#main-content" 
+                   hx-swap="outerHTML" 
+                   hx-push-url="true">
+                    <i class="fa-solid fa-book"></i> 你的資料庫
+                </a>
+            </li>
         </ul>
     </nav>
 

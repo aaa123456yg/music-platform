@@ -1,0 +1,116 @@
+<div id="main-content" class="main-content" style="position: relative; overflow-y: auto;">
+    
+    <header class="top-bar" style="position: sticky; top: 0; z-index: 100; background-color: #121212; border-bottom: none;">
+        <div class="nav-buttons">
+            <button class="circle-btn" onclick="history.back()" title="上一頁"><i class="fa-solid fa-chevron-left"></i></button>
+            <button class="circle-btn" onclick="history.forward()" title="下一頁"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+
+        <div class="search-container">
+            <form action="/search" method="GET" class="search-form"
+                  hx-get="/search" hx-target="#main-content" hx-select="#main-content" hx-push-url="true">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" name="q" placeholder="想播放什麼內容？" autocomplete="off">
+            </form>
+        </div>
+
+        <div class="user-menu-container">
+            <button class="user-btn" onclick="toggleDropdown()">
+                <div class="avatar-circle"><i class="fa-solid fa-user"></i></div>
+                <span class="username">{{ current_user.display_name }}</span>
+                <i class="fa-solid fa-caret-down"></i>
+            </button>
+            <div id="userDropdown" class="dropdown-content">
+                <a href="#" class="dropdown-item" hx-get="/user/{{ current_user.user_id }}" hx-target="#main-content" hx-select="#main-content" hx-swap="outerHTML" hx-push-url="true">個人檔案</a>
+                <div class="divider"></div>
+                <a href="/logout" class="dropdown-item">登出</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="content-area" style="padding-top: 20px;">
+        
+        <h2 style="margin-bottom: 20px;">你的資料庫</h2>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 24px;">
+            <span style="background: #333; padding: 6px 12px; border-radius: 16px; font-size: 0.85rem; cursor: pointer; color: white;">全部</span>
+            <span style="background: #222; padding: 6px 12px; border-radius: 16px; font-size: 0.85rem; cursor: pointer; color: #b3b3b3;">播放清單</span>
+            <span style="background: #222; padding: 6px 12px; border-radius: 16px; font-size: 0.85rem; cursor: pointer; color: #b3b3b3;">藝人</span>
+            <span style="background: #222; padding: 6px 12px; border-radius: 16px; font-size: 0.85rem; cursor: pointer; color: #b3b3b3;">專輯</span>
+        </div>
+
+        <div class="cards-container">
+            
+            <div class="card" 
+                 hx-get="/collection/tracks" 
+                 hx-target="#main-content" 
+                 hx-select="#main-content" 
+                 hx-swap="outerHTML" 
+                 hx-push-url="true"
+                 style="cursor: pointer; grid-column: span 2; background: linear-gradient(135deg, #450af5, #8e8ee5); display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; min-height: 200px;">
+                
+                <div style="margin-bottom: 20px;">
+                    <span style="opacity: 0.7; font-size: 0.9rem;"> </span>
+                </div>
+                <div>
+                    <h2 style="font-size: 2rem; margin: 0 0 8px 0;">已按讚的歌曲</h2>
+                    <p style="margin: 0; font-weight: 700;">{{ liked_songs_count }} 首歌曲</p>
+                </div>
+            </div>
+
+            {% for playlist in playlists %}
+            <div class="card" 
+                 hx-get="/playlist/{{ playlist.playlist_id }}" 
+                 hx-target="#main-content" 
+                 hx-select="#main-content" 
+                 hx-swap="outerHTML" 
+                 hx-push-url="true"
+                 style="cursor: pointer;">
+                
+                <div class="card-img-placeholder">🎵</div>
+                <h3>{{ playlist.name }}</h3>
+                <p>播放清單 • {{ current_user.display_name }}</p>
+            </div>
+            {% endfor %}
+
+            {% for album in albums %}
+            <div class="card" 
+                 hx-get="/album/{{ album.album_id }}" 
+                 hx-target="#main-content" 
+                 hx-select="#main-content" 
+                 hx-swap="outerHTML" 
+                 hx-push-url="true"
+                 style="cursor: pointer;">
+                
+                {% if album.cover_art_url %}
+                    <img src="{{ album.cover_art_url }}" class="card-img" alt="{{ album.title }}">
+                {% else %}
+                    <div class="card-img-placeholder">🎵</div>
+                {% endif %}
+                <h3>{{ album.title }}</h3>
+                <p>專輯 • {{ album.artist.name }}</p>
+            </div>
+            {% endfor %}
+
+            {% for artist in artists %}
+            <div class="card"
+                 hx-get="/artist/{{ artist.artist_id }}"
+                 hx-target="#main-content"  
+                 hx-select="#main-content" 
+                 hx-swap="outerHTML"
+                 hx-push-url="true"
+                 style="cursor: pointer;">
+                 
+                {% if artist.artist_image_url %}
+                    <img src="{{ artist.artist_image_url }}" class="card-img rounded-circle" alt="{{ artist.name }}" style="object-fit: cover;">
+                {% else %}
+                    <div class="card-img-placeholder rounded-circle">🎤</div>
+                {% endif %}
+                <h3>{{ artist.name }}</h3>
+                <p>藝人</p>
+            </div>
+            {% endfor %}
+
+        </div>
+    </div>
+</div>
