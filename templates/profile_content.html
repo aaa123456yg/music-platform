@@ -130,6 +130,34 @@
                 {% endif %}
             </div>
         </section>
+        <section class="section-block">
+            <h2>收藏的專輯</h2>
+            <div class="cards-container">
+                {% for album in user.liked_albums %}
+                <div class="card" 
+                     hx-get="/album/{{ album.album_id }}" 
+                     hx-target="#main-content" 
+                     hx-select="#main-content" 
+                     hx-swap="outerHTML" 
+                     hx-push-url="true"
+                     style="cursor: pointer;">
+                    
+                    {% if album.cover_art_url %}
+                        <img src="{{ album.cover_art_url }}" class="card-img" alt="{{ album.title }}">
+                    {% else %}
+                        <div class="card-img-placeholder">🎵</div>
+                    {% endif %}
+                    
+                    <h3>{{ album.title }}</h3>
+                    <p>{{ album.artist.name }} • 專輯</p>
+                </div>
+                {% endfor %}
+
+                {% if not user.liked_albums %}
+                    <p style="color: #b3b3b3;">還沒收藏任何專輯。</p>
+                {% endif %}
+            </div>
+        </section>
 
     </div>
 </div>

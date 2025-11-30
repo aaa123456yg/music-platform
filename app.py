@@ -57,6 +57,11 @@ user_followed_artists = db.Table('user_followed_artists',
     db.Column('artist_id', db.Integer, db.ForeignKey('artists.artist_id'), primary_key=True),
     db.Column('followed_at', db.DateTime, default=datetime.utcnow)
 )
+user_liked_albums = db.Table('user_liked_albums',
+    db.Column('user_id', db.Integer, db.ForeignKey('users.user_id'), primary_key=True),
+    db.Column('album_id', db.Integer, db.ForeignKey('albums.album_id'), primary_key=True),
+    db.Column('liked_at', db.DateTime, default=datetime.utcnow)
+)
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -71,6 +76,7 @@ class User(UserMixin, db.Model):
     playlists = db.relationship('Playlist', backref='owner', lazy=True)
     liked_songs = db.relationship('Song', secondary=user_liked_songs, backref='liked_by_users')
     followed_artists = db.relationship('Artist', secondary=user_followed_artists, backref='followers')
+    liked_albums = db.relationship('Album', secondary=user_liked_albums, backref='liked_by_users')
 
     # Flask-Login 需要的方法 (因為我們 PK 叫 user_id 不是 id)
     def get_id(self):
@@ -205,6 +211,45 @@ def toggle_like(song_id):
                hx-post="/toggle_like/{song.song_id}" 
                hx-swap="outerHTML">
             </i>
+        '''
+
+
+# app.py - 收藏/取消收藏專輯
+
+@app.route('/toggle_album_like/<int:album_id>', methods=['POST'])
+@login_required
+def toggle_album_like(album_id):
+    album = Album.query.get_or_404(album_id)
+    
+    # 判斷邏輯
+    if album in current_user.liked_albums:
+        current_user.liked_albums.remove(album)
+        is_liked = False
+    else:
+        current_user.liked_albums.append(album)
+        is_liked = True
+        
+    db.session.commit()
+    
+    # 回傳按鈕 HTML (跟歌曲愛心一樣，只是大一點)
+    if is_liked:
+        return f'''
+            <button class="action-icon" 
+                    title="取消收藏"
+                    style="color: #1ed760;"
+                    hx-post="/toggle_album_like/{album.album_id}" 
+                    hx-swap="outerHTML">
+                <i class="fa-solid fa-heart"></i>
+            </button>
+        '''
+    else:
+        return f'''
+            <button class="action-icon" 
+                    title="收藏專輯"
+                    hx-post="/toggle_album_like/{album.album_id}" 
+                    hx-swap="outerHTML">
+                <i class="fa-regular fa-heart"></i>
+            </button>
         '''
 
 # app.py - 追蹤/取消追蹤演出者

@@ -74,7 +74,22 @@
 
         <div class="action-bar">
             <button class="play-btn-large" onclick="playFirstSong()"><i class="fa-solid fa-play"></i></button>
-            <button class="action-icon"><i class="fa-regular fa-heart"></i></button>
+            {% if album in current_user.liked_albums %}
+                <button class="action-icon" 
+                        title="取消收藏"
+                        style="color: #1ed760;"
+                        hx-post="/toggle_album_like/{{ album.album_id }}" 
+                        hx-swap="outerHTML">
+                    <i class="fa-solid fa-heart"></i>
+                </button>
+            {% else %}
+                <button class="action-icon" 
+                        title="收藏專輯"
+                        hx-post="/toggle_album_like/{{ album.album_id }}" 
+                        hx-swap="outerHTML">
+                    <i class="fa-regular fa-heart"></i>
+                </button>
+            {% endif %}
             <button class="action-icon"><i class="fa-solid fa-ellipsis"></i></button>
         </div>
 
