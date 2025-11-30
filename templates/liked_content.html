@@ -123,13 +123,40 @@
                                 <img src="{{ song.album.cover_art_url }}" class="mini-cover">
                                 <div>
                                     <span class="song-name-highlight">{{ song.title }}</span>
-                                    <span class="song-artist-sub">{{ song.album.artist.name }}</span>
+                                    
+                                    <a href="#" 
+                                       class="song-artist-sub"
+                                       hx-get="/artist/{{ song.album.artist.artist_id }}" 
+                                       hx-target="#main-content" 
+                                       hx-select="#main-content" 
+                                       hx-swap="outerHTML" 
+                                       hx-push-url="true"
+                                       onclick="event.stopPropagation()"
+                                       style="text-decoration: none; color: #b3b3b3; cursor: pointer;"
+                                       onmouseover="this.style.color='#fff'; this.style.textDecoration='underline';"
+                                       onmouseout="this.style.color='#b3b3b3'; this.style.textDecoration='none';">
+                                       {{ song.album.artist.name }}
+                                    </a>
+
                                 </div>
                             </div>
                         </div>
                     </td>
                     
-                    <td>{{ song.album.title }}</td>
+                    <td>
+                        <a href="#" 
+                           hx-get="/album/{{ song.album.album_id }}" 
+                           hx-target="#main-content" 
+                           hx-select="#main-content" 
+                           hx-swap="outerHTML" 
+                           hx-push-url="true"
+                           onclick="event.stopPropagation()"
+                           style="text-decoration: none; color: #b3b3b3; cursor: pointer; font-size: 0.9rem;"
+                           onmouseover="this.style.color='#fff'; this.style.textDecoration='underline';"
+                           onmouseout="this.style.color='#b3b3b3'; this.style.textDecoration='none';">
+                           {{ song.album.title }}
+                        </a>
+                    </td>
                     
                     <td style="color: #b3b3b3; font-size: 0.9rem; white-space: nowrap;">
                         {{ liked_at.strftime('%Y-%m-%d') }}
