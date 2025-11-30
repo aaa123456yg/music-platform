@@ -170,6 +170,42 @@ function playNextSong(autoPlay = false) {
     }
     currentSongIndex = nextIndex;
     loadAndPlay(currentQueue[nextIndex]);
+}// --- 7. 下一首邏輯 (修正版) ---
+function playNextSong(autoPlay = false) {
+    if (currentQueue.length === 0) return;
+
+    const p = getPlayerElements();
+
+    // 1. 單曲循環
+    if ((autoPlay || !autoPlay) && repeatState === 2) {
+        p.audio.currentTime = 0;
+        p.audio.play();
+        return;
+    }
+
+    // 計算下一首的位置
+    let nextIndex = currentSongIndex + 1;
+
+    // 2. 判斷是否到底了
+    if (nextIndex >= currentQueue.length) {
+        if (repeatState === 1) {
+            // 列表循環：回到第一首
+            nextIndex = 0; 
+        } else {
+            // ★★★ 修正這裡：不循環模式 ★★★
+            // 1. 真正的停止音樂
+            p.audio.pause(); 
+            // 2. (選用) 把進度拉回開頭
+            p.audio.currentTime = 0; 
+            // 3. 更新圖示為「暫停狀態 (顯示播放鍵)」
+            updatePlayIcon(false); 
+            return;
+        }
+    }
+
+    // 3. 正常播放下一首
+    currentSongIndex = nextIndex;
+    loadAndPlay(currentQueue[nextIndex]);
 }
 
 function playPrevSong() {
