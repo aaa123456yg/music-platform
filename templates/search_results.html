@@ -201,6 +201,29 @@
             </section>
             {% endif %}
 
+            {% if playlists %}
+            <section class="result-section">
+                <h3>播放清單</h3>
+                <div class="cards-container">
+                    {% for playlist in playlists %}
+                    <div class="card"
+                         hx-get="/playlist/{{ playlist.playlist_id }}"
+                         hx-target="#main-content"
+                         hx-select="#main-content"
+                         hx-swap="outerHTML"
+                         hx-push-url="true"
+                         style="cursor: pointer;">
+                         
+                        <div class="card-img-placeholder">🎵</div>
+                        
+                        <h3>{{ playlist.name }}</h3>
+                        <p>由 {{ playlist.owner.display_name }} 建立</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+
             {% if not songs and not artists and not albums %}
                 <div style="text-align: center; margin-top: 50px; color: #b3b3b3;">
                     <h3>找不到符合「{{ q }}」的內容</h3>

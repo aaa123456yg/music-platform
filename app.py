@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+from sqlalchemy import or_
 
 # 初始化 Flask App
 app = Flask(__name__)
@@ -174,8 +175,13 @@ def search():
     songs = Song.query.filter(Song.title.ilike(f'%{q}%')).all()
     albums = Album.query.filter(Album.title.ilike(f'%{q}%')).all()
     artists = Artist.query.filter(Artist.name.ilike(f'%{q}%')).all()
+    # 4. ★★★ 新增：搜尋播放清單 (公開的 OR 我自己的) ★★★
+    playlists = Playlist.query.filter(
+        Playlist.name.ilike(f'%{q}%'),
+        or_(Playlist.is_public == True, Playlist.user_id == current_user.user_id)
+    ).all()
 
-    return render_template('search_results.html', q=q, songs=songs, albums=albums, artists=artists)
+    return render_template('search_results.html', q=q, songs=songs, albums=albums, artists=artists, playlists=playlists)
 
 @app.route('/toggle_like/<int:song_id>', methods=['POST'])
 @login_required
