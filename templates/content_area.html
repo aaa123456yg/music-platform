@@ -29,7 +29,15 @@
                 <i class="fa-solid fa-caret-down"></i>
             </button>
             <div id="userDropdown" class="dropdown-content">
-                <a href="#" class="dropdown-item">個人檔案</a>
+                <a  href="#" 
+                    class="dropdown-item"
+                    hx-get="/user/{{ current_user.user_id }}" 
+                    hx-target="#main-content" 
+                    hx-select="#main-content" 
+                    hx-swap="outerHTML" 
+                    hx-push-url="true">
+                    個人檔案
+                </a>
                 <div class="divider"></div>
                 <a href="/logout" class="dropdown-item">登出</a>
             </div>

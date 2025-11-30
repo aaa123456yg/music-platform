@@ -621,7 +621,26 @@ def admin_logout():
     session.pop('admin_id', None)
     return redirect(url_for('admin_login'))
 
-# app.py
+# app.py - 個人檔案頁面
+
+@app.route('/user/<int:user_id>')
+@login_required
+def user_profile(user_id):
+    # 1. 抓取使用者資料
+    user = User.query.get_or_404(user_id)
+    
+    # 2. 抓取該使用者的「公開」播放清單
+    # (如果是看自己的檔案，你也可以考慮顯示全部，但這裡我們先只顯示公開的)
+    public_playlists = Playlist.query.filter_by(user_id=user.user_id, is_public=True).all()
+    
+    # 3. 抓取該使用者追蹤的演出者
+    followed_artists = user.followed_artists
+    
+    # 4. 回傳頁面
+    if request.headers.get('HX-Request'):
+        return render_template('profile_content.html', user=user, playlists=public_playlists, artists=followed_artists)
+    
+    return render_template('profile_detail.html', user=user, playlists=public_playlists, artists=followed_artists)
 
 # app.py
 
