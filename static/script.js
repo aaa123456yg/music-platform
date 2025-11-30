@@ -32,45 +32,129 @@ let currentQueue = [];      // 存放整張歌單的資訊 [{url, title, artist,
 let currentSongIndex = -1;  // 目前播到第幾首
 let repeatState = 0;        // 0:不循環, 1:列表循環, 2:單曲循環
 
-// --- 3. 播放指定歌曲 (手動點擊觸發) ---
-function playMusic(url, title, artist, coverUrl, rowElement) {
-    // 1. 如果是手動點擊，我們需要「重建佇列」
-    // 這樣播放器才知道現在是在哪個清單裡，以及下一首是誰
+// --- 3. 播放指定歌曲 (接收 artistId) ---
+function playMusic(url, title, artist, coverUrl, rowElement, artistId) {
+    // 1. 重新抓取 DOM
+    const audioPlayer = document.getElementById('audio-player');
+    const playerTitle = document.getElementById('player-title');
+    const playerArtist = document.getElementById('player-artist'); // 這是 <a> 標籤
+    const playerCover = document.getElementById('player-cover');
+
+    // 2. 如果是手動點擊，重建佇列
     if (rowElement) {
         buildQueueFromDOM(rowElement);
     }
 
-    // 2. 執行播放
-    loadAndPlay(url, title, artist, coverUrl);
+    // 3. 設定音訊與文字
+    audioPlayer.src = url;
+    playerTitle.innerText = title;
+    playerArtist.innerText = artist;
+    
+    // ★★★ 關鍵：設定演出者連結 ★★★
+    if (artistId && playerArtist) {
+        // 移除舊的事件監聽器 (避免重複)
+        const newArtistLink = playerArtist.cloneNode(true);
+        playerArtist.parentNode.replaceChild(newArtistLink, playerArtist);
+        
+        // 綁定新的點擊事件 (使用 HTMX API)
+        newArtistLink.onclick = function(e) {
+            e.preventDefault(); // 阻止 href="#" 跳轉
+            htmx.ajax('GET', `/artist/${artistId}`, {
+                target: '#main-content',
+                select: '#main-content',
+                swap: 'outerHTML'
+            }).then(() => {
+                // 手動更新網址列
+                history.pushState(null, '', `/artist/${artistId}`);
+            });
+        };
+    }
+
+    if (coverUrl && coverUrl !== 'None') {
+        playerCover.src = coverUrl;
+        playerCover.style.display = 'block';
+    } else {
+        playerCover.style.display = 'none';
+    }
+
+    // 視覺標記
+    if (currentPlayingRow) currentPlayingRow.classList.remove('playing');
+    if (rowElement) {
+        currentPlayingRow = rowElement;
+        currentPlayingRow.classList.add('playing');
+    }
+
+    audioPlayer.play();
+    updatePlayIcon(true);
+    syncVisuals();
 }
 
-// 輔助函式：從網頁抓取所有歌曲建立佇列
+// Update loadAndPlay to handle the link
+function loadAndPlay(url, title, artist, coverUrl, artistId) {
+    const audioPlayer = document.getElementById('audio-player');
+    const playerTitle = document.getElementById('player-title');
+    const playerArtist = document.getElementById('player-artist');
+    const playerCover = document.getElementById('player-cover');
+
+    audioPlayer.src = url;
+    
+    if (playerTitle) playerTitle.innerText = title;
+    
+    if (playerArtist) {
+        playerArtist.innerText = artist;
+        // ★★★ NEW: Update the link href ★★★
+        // Use HTMX logic manually if you want SPA behavior, or just simple href
+        // Simple href:
+        // playerArtist.href = `/artist/${artistId}`;
+        
+        // SPA behavior (HTMX-like):
+        playerArtist.setAttribute('hx-get', `/artist/${artistId}`);
+        playerArtist.setAttribute('hx-target', '#main-content');
+        playerArtist.setAttribute('hx-select', '#main-content');
+        playerArtist.setAttribute('hx-swap', 'outerHTML');
+        playerArtist.setAttribute('hx-push-url', 'true');
+        // We need to re-process this element with HTMX because we changed attributes dynamically
+        htmx.process(playerArtist);
+    }
+    
+    if (playerCover) {
+        if (coverUrl && coverUrl !== 'None') {
+            playerCover.src = coverUrl;
+            playerCover.style.display = 'block';
+        } else {
+            playerCover.style.display = 'none';
+        }
+    }
+
+    audioPlayer.play();
+    updatePlayIcon(true);
+    syncVisuals();
+}
+
 function buildQueueFromDOM(clickedRow) {
     currentQueue = [];
     const rows = document.querySelectorAll('.song-row');
     
     rows.forEach((row, index) => {
-        // 解析 onclick 字串來取得歌曲資訊 (這招比較暴力但有效)
-        // 格式: playMusic('url', 'title', 'artist', 'cover', this)
         const onclickText = row.getAttribute('onclick');
-        const parts = onclickText.split("'"); // 用單引號切割
+        const parts = onclickText.split("'"); 
         
-        // 依照順序提取 (index 1, 3, 5, 7 對應 url, title, artist, cover)
+        // playMusic('url', 'title', 'artist', 'cover', this, 'artistId')
+        // index: 1=url, 3=title, 5=artist, 7=cover, 11=artistId
+        
         const songData = {
             url: parts[1],
             title: parts[3],
             artist: parts[5],
-            cover: parts[7]
+            cover: parts[7],
+            artistId: parts[11] // ★★★ 抓取第 6 個參數 ★★★
         };
         currentQueue.push(songData);
 
-        // 標記目前點擊的是哪一首
         if (row === clickedRow) {
             currentSongIndex = index;
         }
     });
-    
-    console.log(`佇列已更新：共 ${currentQueue.length} 首，目前在第 ${currentSongIndex + 1} 首`);
 }
 
 // 輔助函式：載入並播放
@@ -174,7 +258,7 @@ function playNextSong(autoPlay = false) {
     // 播放下一首
     currentSongIndex = nextIndex;
     const nextSong = currentQueue[nextIndex];
-    loadAndPlay(nextSong.url, nextSong.title, nextSong.artist, nextSong.cover);
+    loadAndPlay(nextSong.url, nextSong.title, nextSong.artist, nextSong.cover, nextSong.artistId);
 }
 
 // --- 8. ★★★ 上一首邏輯 (改用記憶體佇列) ★★★ ---
@@ -192,7 +276,7 @@ function playPrevSong() {
 
     currentSongIndex = prevIndex;
     const prevSong = currentQueue[prevIndex];
-    loadAndPlay(prevSong.url, prevSong.title, prevSong.artist, prevSong.cover);
+    loadAndPlay(prevSong.url, prevSong.title, prevSong.artist, prevSong.cover, nextSong.artistId);
 }
 
 // --- 9. 自動播放結束 ---

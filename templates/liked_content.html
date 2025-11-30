@@ -110,7 +110,7 @@
             <tbody>
                 {% for song, liked_at in songs %}
                 <tr class="song-row" 
-                    onclick="playMusic('{{ song.audio_file_url }}', '{{ song.title }}', '{{ song.album.artist.name }}', '{{ song.album.cover_art_url }}', this)">
+                    onclick="playMusic('{{ song.audio_file_url }}', '{{ song.title }}', '{{ song.album.artist.name }}', '{{ song.album.cover_art_url }}', this, '{{ song.album.artist.artist_id }}')">
                     
                     <td class="song-index">
                         <span class="index-num">{{ loop.index }}</span>

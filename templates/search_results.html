@@ -76,7 +76,7 @@
                     <tbody>
                         {% for song in songs %}
                         <tr class="song-row" 
-                            onclick="playMusic('{{ song.audio_file_url }}', '{{ song.title }}', '{{ song.album.artist.name }}', '{{ song.album.cover_art_url }}', this)">
+                            onclick="playMusic('{{ song.audio_file_url }}', '{{ song.title }}', '{{ song.album.artist.name }}', '{{ song.album.cover_art_url }}', this, '{{ song.album.artist.artist_id }}')">
                             
                             <td class="song-index">
                                 <span class="index-num">{{ loop.index }}</span>
@@ -96,7 +96,20 @@
                                     </div>
                                 </div>
                             </td>
-                            <td>{{ song.album.title }}</td>
+                            <td>
+                                <a href="#" 
+                                hx-get="/album/{{ song.album.album_id }}" 
+                                hx-target="#main-content" 
+                                hx-select="#main-content" 
+                                hx-swap="outerHTML" 
+                                hx-push-url="true"
+                                style="color: #b3b3b3; text-decoration: none; font-size: 0.9rem;"
+                                onmouseover="this.style.color='#fff'; this.style.textDecoration='underline';"
+                                onmouseout="this.style.color='#b3b3b3'; this.style.textDecoration='none';"
+                                onclick="event.stopPropagation()">
+                                {{ song.album.title }}
+                                </a>
+                            </td>
                             <td style="text-align: right; color: #b3b3b3;">
                                 {{ song.duration_minutes }}:{{ '%02d' % song.duration_seconds }}
                             </td>
@@ -203,7 +216,11 @@
             <img id="player-cover" src="" alt="" class="player-cover-img" style="display:none;">
             <div class="player-text">
                 <span id="player-title" class="player-title"></span>
-                <span id="player-artist" class="player-artist"></span>
+                <a  id="player-artist" href="#" class="player-artist" 
+                    style="text-decoration: none; color: #b3b3b3;" 
+                    onmouseover="this.style.color='#fff'; this.style.textDecoration='underline';" 
+                    onmouseout="this.style.color='#b3b3b3'; this.style.textDecoration='none';">
+                </a>
             </div>
         </div>
 
