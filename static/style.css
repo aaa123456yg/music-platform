@@ -549,8 +549,24 @@ input[type=range]:hover { background: #1db954; }
 input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 12px; width: 12px; border-radius: 50%; background: #fff; display: none; }
 .progress-container:hover input[type=range]::-webkit-slider-thumb { display: block; }
 
-.player-volume { display: flex; justify-content: flex-end; align-items: center; gap: 10px; color: #b3b3b3; }
-#volume-bar { width: 100px; }
+/* 強制修正音量條點擊問題 */
+/* 強制提升音量區塊的層級 */
+.player-volume {
+    position: relative !important;
+    z-index: 9800 !important; /* 確保浮在最上面 */
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+/* 確保喇叭圖示可以點擊 */
+#volume-icon {
+    cursor: pointer !important;
+    position: relative !important;
+    z-index: 10000 !important; /* 比容器更高 */
+    width: 24px; /* 增加點擊範圍 */
+    text-align: center;
+}
 
 /* --- 追蹤按鈕樣式補充 --- */
 

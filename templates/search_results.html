@@ -282,8 +282,14 @@
         </div>
 
         <div class="player-volume">
-            <i class="fa-solid fa-volume-high"></i>
-            <input type="range" id="volume-bar" min="0" max="1" step="0.1" value="1" oninput="setVolume()">
+            <i id="volume-icon" 
+               class="fa-solid fa-volume-high" 
+               onclick="toggleMute()" 
+               title="靜音/取消靜音"
+               style="cursor: pointer; margin-right: 8px;">
+            </i>
+            
+            <input type="range" id="volume-bar" min="0" max="1" step="0.01" value="0.5" oninput="setVolume()">
         </div>
 
         <audio id="audio-player"></audio>

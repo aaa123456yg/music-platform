@@ -1,3 +1,5 @@
+/* static/script.js */
+
 // --- 1. 下拉選單控制 ---
 function toggleDropdown() { 
     const dropdown = document.getElementById("userDropdown");
@@ -13,54 +15,93 @@ window.onclick = function(event) {
     }
 }
 
-// --- 2. 播放器變數與狀態 ---
+// --- 2. 播放器變數 ---
 function getPlayerElements() {
     return {
         audio: document.getElementById('audio-player'),
         icon: document.getElementById('main-play-icon'),
         bar: document.getElementById('progress-bar'),
+        //volBar: document.getElementById('volume-bar'), // 確保這裡有名稱
         currTime: document.getElementById('current-time'),
         totTime: document.getElementById('total-duration'),
         cover: document.getElementById('player-cover'),
         title: document.getElementById('player-title'),
-        artist: document.getElementById('player-artist'), // <a> 標籤
+        artist: document.getElementById('player-artist'),
         repeatBtn: document.getElementById('repeat-btn')
     };
 }
 
 let currentQueue = [];
 let currentSongIndex = -1;
-let repeatState = 0; // 0:不循環, 1:列表循環, 2:單曲循環
+let repeatState = 0; 
 
-// --- 3. 播放指定歌曲 (手動點擊入口) ---
-function playMusic(url, title, artist, coverUrl, rowElement, artistId) {
-    // 1. 如果是手動點擊，重建播放佇列
-    if (rowElement) {
-        buildQueueFromDOM(rowElement);
-    }
-
-    // 2. 建構歌曲物件
-    const song = {
-        url: url,
-        title: title,
-        artist: artist,
-        cover: coverUrl,
-        artistId: artistId
-    };
-
-    // 3. 統一呼叫播放函式
-    loadAndPlay(song);
+// ★★★ 視覺優化函式 ★★★
+function updateRangeVisuals(el) {
+    if (!el) return;
+    const val = parseFloat(el.value);
+    const min = parseFloat(el.min || 0);
+    const max = parseFloat(el.max || 100);
+    const percent = (val - min) / (max - min) * 100;
+    el.style.background = `linear-gradient(to right, #1ed760 0%, #1ed760 ${percent}%, #535353 ${percent}%, #535353 100%)`;
 }
 
-// --- 核心：載入並播放 (所有播放動作都走這裡) ---
+// ★★★ 通用滑桿監聽 ★★★
+function addRangeListener(el, callback) {
+    if (!el) return;
+    updateRangeVisuals(el);
+    el.addEventListener('input', function() {
+        updateRangeVisuals(this);
+        if (callback) callback(this.value);
+    });
+}
+
+// --- 3. 播放邏輯 ---
+function playMusic(url, title, artist, coverUrl, rowElement, artistId) {
+    const p = getPlayerElements();
+    p.audio.src = url;
+    p.title.innerText = title;
+    p.artist.innerText = artist;
+
+    if (p.artist && artistId) {
+        const newLink = p.artist.cloneNode(true);
+        p.artist.parentNode.replaceChild(newLink, p.artist);
+        newLink.href = "#";
+        newLink.style.cursor = "pointer";
+        newLink.onclick = function(e) {
+            e.preventDefault();
+            htmx.ajax('GET', `/artist/${artistId}`, {
+                target: '#main-content', select: '#main-content', swap: 'outerHTML'
+            }).then(() => history.pushState(null, '', `/artist/${artistId}`));
+        };
+    }
+    
+    if (p.cover) {
+        if (coverUrl && coverUrl !== 'None') {
+            p.cover.src = coverUrl;
+            p.cover.style.display = 'block';
+        } else {
+            p.cover.style.display = 'none';
+        }
+    }
+
+    if (rowElement) {
+        buildQueueFromDOM(rowElement);
+        document.querySelectorAll('.song-name-highlight').forEach(el => el.style.color = '');
+        const titleEl = rowElement.querySelector('.song-name-highlight');
+        if (titleEl) titleEl.style.color = '#1ed760';
+    }
+
+    const playPromise = p.audio.play();
+    if (playPromise !== undefined) {
+        playPromise.then(() => updatePlayIcon(true)).catch(err => console.log(err));
+    }
+    syncVisuals(title);
+}
+
 function loadAndPlay(song) {
     const p = getPlayerElements();
     if (!p.audio) return;
-
-    // 1. 設定音訊
     p.audio.src = song.url;
-
-    // 2. 更新文字與封面
     if (p.title) p.title.innerText = song.title;
     if (p.artist) p.artist.innerText = song.artist;
 
@@ -72,149 +113,79 @@ function loadAndPlay(song) {
             p.cover.style.display = 'none';
         }
     }
-
-    // 3. ★★★ 關鍵：更新演出者連結 (上一首/下一首也能更新連結了) ★★★
+    
     if (p.artist && song.artistId) {
-        // 複製節點以移除舊事件
         const newLink = p.artist.cloneNode(true);
         p.artist.parentNode.replaceChild(newLink, p.artist);
-        
-        // 設定新連結
-        newLink.href = "#"; // 防止跳轉
+        newLink.href = "#";
         newLink.style.cursor = "pointer";
-        
-        // 綁定 HTMX 行為
         newLink.onclick = function(e) {
             e.preventDefault();
             htmx.ajax('GET', `/artist/${song.artistId}`, {
-                target: '#main-content',
-                select: '#main-content',
-                swap: 'outerHTML'
-            }).then(() => {
-                history.pushState(null, '', `/artist/${song.artistId}`);
-            });
+                target: '#main-content', select: '#main-content', swap: 'outerHTML'
+            }).then(() => history.pushState(null, '', `/artist/${song.artistId}`));
         };
     }
 
-    // 4. 播放
-    // 使用 Promise 避免報錯
     const playPromise = p.audio.play();
     if (playPromise !== undefined) {
-        playPromise
-            .then(() => updatePlayIcon(true))
-            .catch(err => console.log("播放被瀏覽器阻擋:", err));
+        playPromise.then(() => updatePlayIcon(true)).catch(err => console.log(err));
     }
-
-    // 5. 同步視覺 (變綠色)
     syncVisuals(song.title);
 }
 
-// --- 輔助：從 DOM 建立佇列 ---
 function buildQueueFromDOM(clickedRow) {
     currentQueue = [];
     const rows = document.querySelectorAll('.song-row');
-    
     rows.forEach((row, index) => {
-        // 解析 onclick 屬性
         const onclickText = row.getAttribute('onclick');
         if (!onclickText) return;
-
         const parts = onclickText.split("'");
-        // 格式: playMusic('url', 'title', 'artist', 'cover', this, 'id')
-        // index: 1=url, 3=title, 5=artist, 7=cover, 9=artistId
         if (parts.length >= 10) {
             currentQueue.push({
-                url: parts[1],
-                title: parts[3],
-                artist: parts[5],
-                cover: parts[7],
-                artistId: parts[9]
+                url: parts[1], title: parts[3], artist: parts[5], cover: parts[7], artistId: parts[9]
             });
         }
-
-        if (row === clickedRow) {
-            currentSongIndex = index;
-        }
+        if (row === clickedRow) currentSongIndex = index;
     });
-    console.log(`佇列已建立: ${currentQueue.length} 首`);
 }
 
-// --- 4. 上/下一首邏輯 ---
+// --- 4. 播放控制 ---
 function playNextSong(autoPlay = false) {
     if (currentQueue.length === 0) return;
-
     const p = getPlayerElements();
-
-    // 單曲循環
     if ((autoPlay || !autoPlay) && repeatState === 2) {
         p.audio.currentTime = 0;
         p.audio.play();
         return;
     }
-
     let nextIndex = currentSongIndex + 1;
     if (nextIndex >= currentQueue.length) {
         if (repeatState === 1) {
-            nextIndex = 0; // 列表循環回到頭
+            nextIndex = 0;
         } else {
-            updatePlayIcon(false); // 停止
+            updatePlayIcon(false);
             return;
         }
     }
-
     currentSongIndex = nextIndex;
     loadAndPlay(currentQueue[nextIndex]);
 }
 
 function playPrevSong() {
     if (currentQueue.length === 0) return;
-
     const p = getPlayerElements();
-
-    // 單曲循環 -> 重播
-    if (repeatState === 2) {
+    if (repeatState === 2 || p.audio.currentTime > 3) {
         p.audio.currentTime = 0;
         p.audio.play();
         return;
     }
-
-    // 如果播放超過 3 秒，按上一首通常是「重頭播」
-    if (p.audio.currentTime > 3) {
-        p.audio.currentTime = 0;
-        p.audio.play();
-        return;
-    }
-
-    // 真的切換到上一首
     let prevIndex = currentSongIndex - 1;
-    if (prevIndex < 0) prevIndex = 0; // 已經是第一首就重播第一首
-
+    if (prevIndex < 0) prevIndex = 0;
     currentSongIndex = prevIndex;
     loadAndPlay(currentQueue[prevIndex]);
 }
 
-// --- 5. 視覺同步 (變綠色) ---
-function syncVisuals(playingTitle) {
-    // 如果沒傳參數，嘗試從佇列抓
-    if (!playingTitle && currentQueue.length > 0 && currentSongIndex !== -1) {
-        playingTitle = currentQueue[currentSongIndex].title;
-    }
-    if (!playingTitle) return;
-
-    // 移除所有綠色
-    document.querySelectorAll('.song-name-highlight').forEach(el => el.style.color = '');
-    
-    // 加上綠色 (使用 trim 去除空白，增加準確度)
-    const rows = document.querySelectorAll('.song-row');
-    rows.forEach(row => {
-        const titleEl = row.querySelector('.song-name-highlight');
-        if (titleEl && titleEl.innerText.trim() === playingTitle.trim()) {
-            titleEl.style.color = '#1ed760';
-        }
-    });
-}
-
-// --- 6. 其他播放控制 ---
 function playFirstSong() {
     const firstRow = document.querySelector('.song-row');
     if (firstRow) firstRow.click();
@@ -261,46 +232,104 @@ function toggleRepeat() {
     }
 }
 
-// --- 7. 事件監聽 ---
-// 頁面載入後綁定
-document.addEventListener('DOMContentLoaded', () => {
+// --- 7. 事件監聽 & 初始化 ---
+const defaultVolume = 0.5;
+let lastVolume = defaultVolume;
+
+function initPlayerEvents() {
     const p = getPlayerElements();
     if (p.audio) {
-        p.audio.onended = function() { playNextSong(true); };
-        p.audio.ontimeupdate = handleTimeUpdate;
-    }
-});
+        if (p.bar) {
+            addRangeListener(p.bar, (val) => {
+                const seekTime = (val / 100) * p.audio.duration;
+                p.audio.currentTime = seekTime;
+            });
+        }
 
-// HTMX 換頁後重新綁定 (並同步綠色文字)
+        p.audio.onended = function() { playNextSong(true); };
+        
+        p.audio.ontimeupdate = function() {
+            if (p.audio.duration) {
+                const progress = (p.audio.currentTime / p.audio.duration) * 100;
+                p.bar.value = progress;
+                p.currTime.innerText = formatTime(p.audio.currentTime);
+                p.totTime.innerText = formatTime(p.audio.duration);
+                updateRangeVisuals(p.bar);
+            }
+        };
+    }
+}
+
+document.addEventListener('DOMContentLoaded', initPlayerEvents);
 document.body.addEventListener('htmx:afterSwap', function() {
-    const p = getPlayerElements();
-    if (p.audio) {
-        p.audio.onended = function() { playNextSong(true); };
-        p.audio.ontimeupdate = handleTimeUpdate;
-        syncVisuals(); // 換頁後立刻檢查有沒有正在播的歌
-    }
+    initPlayerEvents();
+    syncVisuals();
 });
 
-function handleTimeUpdate() {
-    const p = getPlayerElements();
-    if (p.audio && p.audio.duration) {
-        const progress = (p.audio.currentTime / p.audio.duration) * 100;
-        p.bar.value = progress;
-        p.currTime.innerText = formatTime(p.audio.currentTime);
-        p.totTime.innerText = formatTime(p.audio.duration);
-    }
-}
-
-function seekAudio() {
-    const p = getPlayerElements();
-    const seekTime = (p.bar.value / 100) * p.audio.duration;
-    p.audio.currentTime = seekTime;
-}
-
+// ★★★ 這就是你剛剛報錯缺少的函式！現在補上了 ★★★
 function setVolume() {
     const p = getPlayerElements();
-    const vol = document.getElementById('volume-bar');
-    p.audio.volume = vol.value;
+    // 這裡加了防呆，如果抓不到元素就不執行
+    if (!p.audio || !p.volBar) return;
+
+    const volume = p.volBar.value;
+    p.audio.volume = volume;
+    
+    updateRangeVisuals(p.volBar);
+    updateVolumeIcon(volume);
+    
+    if (volume > 0) {
+        lastVolume = volume;
+        p.audio.muted = false;
+    }
+}
+
+// --- 輔助功能 ---
+function toggleMute() {
+    const p = getPlayerElements();
+    // 如果沒有音量條也沒關係，至少要能靜音
+    if (!p.audio) return;
+
+    console.log("Toggle Mute Clicked!"); // ★★★ 除錯用 ★★★
+
+    if (p.audio.muted || p.audio.volume === 0) {
+        // 解除靜音
+        p.audio.muted = false;
+        p.audio.volume = lastVolume || 0.5;
+        if (p.volBar) p.volBar.value = p.audio.volume;
+    } else {
+        // 靜音
+        p.audio.muted = true;
+        if (p.volBar) p.volBar.value = 0;
+    }
+    
+    // 更新視覺 (包含滑桿和圖示)
+    if (p.volBar) updateRangeVisuals(p.volBar);
+    updateVolumeIcon(p.audio.volume);
+}
+
+function updateVolumeIcon(volume) {
+    const volIcon = document.getElementById('volume-icon'); // 改用 ID 抓取更準確
+    if (!volIcon) return;
+    const aud = document.getElementById('audio-player');
+    
+    // 先清空所有 class
+    volIcon.className = ''; 
+    
+    // 根據狀態加回去
+    if (aud && aud.muted) {
+        volIcon.className = 'fa-solid fa-volume-xmark'; // 靜音圖示
+    } else if (volume >= 0.5) {
+        volIcon.className = 'fa-solid fa-volume-high';
+    } else if (volume > 0) {
+        volIcon.className = 'fa-solid fa-volume-low';
+    } else {
+        volIcon.className = 'fa-solid fa-volume-xmark';
+    }
+    
+    // 確保樣式正確
+    volIcon.style.cursor = 'pointer';
+    volIcon.style.marginRight = '15px';
 }
 
 function formatTime(seconds) {
@@ -309,7 +338,23 @@ function formatTime(seconds) {
     return min + ":" + (sec < 10 ? "0" + sec : sec);
 }
 
-// --- 8. 彈跳視窗邏輯 ---
+function syncVisuals(playingTitle) {
+    document.querySelectorAll('.song-name-highlight').forEach(el => el.style.color = '');
+    if (!playingTitle && currentQueue.length > 0 && currentSongIndex !== -1) {
+        playingTitle = currentQueue[currentSongIndex].title;
+    }
+    if (!playingTitle) return;
+
+    const rows = document.querySelectorAll('.song-row');
+    rows.forEach(row => {
+        const titleEl = row.querySelector('.song-name-highlight');
+        if (titleEl && titleEl.innerText.trim() === playingTitle.trim()) {
+            titleEl.style.color = '#1ed760';
+        }
+    });
+}
+
+// 彈跳視窗邏輯
 let currentSongIdToAdd = null; 
 function openAddToPlaylistModal(songId) {
     currentSongIdToAdd = songId;
@@ -347,19 +392,17 @@ function closeModal() {
     const modal = document.getElementById("createPlaylistModal");
     if(modal) modal.style.display = "none";
 }
-// --- 14. 資料庫篩選功能 ---
+
+// 篩選器
 function filterLibrary(type, btn) {
-    // 1. 切換按鈕樣式
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-
-    // 2. 篩選卡片
     const cards = document.querySelectorAll('.cards-container .card');
     cards.forEach(card => {
         if (type === 'all' || card.getAttribute('data-type') === type) {
-            card.style.display = 'block'; // 顯示
+            card.style.display = 'block';
         } else {
-            card.style.display = 'none';  // 隱藏
+            card.style.display = 'none';
         }
     });
 }

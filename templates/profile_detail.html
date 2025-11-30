@@ -41,9 +41,13 @@
                 <span id="total-duration">0:00</span>
             </div>
         </div>
-        <div class="player-volume">
-            <i class="fa-solid fa-volume-high"></i>
-            <input type="range" id="volume-bar" min="0" max="1" step="0.1" value="1" oninput="setVolume()">
+        <div class="player-volume" style="position: relative; z-index: 9999;">
+            <i id="volume-icon" 
+               class="fa-solid fa-volume-high" 
+               onclick="toggleMute()" 
+               title="靜音/取消靜音"
+               style="cursor: pointer; margin-right: 15px; z-index: 10001; position: relative;">
+            </i>
         </div>
         <audio id="audio-player"></audio>
     </div>
