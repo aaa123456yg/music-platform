@@ -533,6 +533,71 @@ def add_artist():
     flash(f'演出者 {name} 新增成功！', 'success')
     return redirect(url_for('admin_dashboard'))
 
+# app.py
+
+@app.route('/admin/add_single', methods=['POST'])
+def add_single():
+    from flask import session
+    title = request.form.get('title')
+    artist_id = request.form.get('artist_id')
+    duration_m = request.form.get('duration_minutes')
+    duration_s = request.form.get('duration_seconds')
+    
+    # 1. 檢查檔案
+    if 'audio_file' not in request.files or 'cover_file' not in request.files:
+        flash('請上傳音檔和封面', 'danger')
+        return redirect(url_for('admin_dashboard'))
+        
+    audio = request.files['audio_file']
+    cover = request.files['cover_file']
+    
+    if audio.filename == '' or cover.filename == '':
+        flash('檔案未選擇', 'danger')
+        return redirect(url_for('admin_dashboard'))
+
+    # 2. 存檔
+    audio_filename = secure_filename(audio.filename)
+    cover_filename = secure_filename(cover.filename)
+    
+    audio.save(os.path.join(app.config['UPLOAD_FOLDER'], audio_filename))
+    cover.save(os.path.join(app.config['COVER_FOLDER'], cover_filename))
+    
+    audio_path = f'/static/music/{audio_filename}'
+    cover_path = f'/static/covers/{cover_filename}'
+
+    # 3. ★★★ 自動建立專輯 ★★★
+    # 專輯名稱 = 歌名, 發行日 = 今天
+    new_album = Album(
+        title=title,
+        artist_id=artist_id,
+        release_date=datetime.utcnow().date(),
+        cover_art_url=cover_path
+    )
+    db.session.add(new_album)
+    db.session.commit() # 先 commit 才能拿到 new_album.album_id
+
+    # 4. ★★★ 建立歌曲並連結到剛建好的專輯 ★★★
+    new_song = Song(
+        title=title,
+        album_id=new_album.album_id, # 自動連結
+        duration_minutes=duration_m,
+        duration_seconds=duration_s,
+        audio_file_url=audio_path,
+        eId=session.get('admin_id'),
+        upload_date=datetime.utcnow()
+    )
+    
+    # (選用) 自動填入 Song_Artists
+    artist = Artist.query.get(artist_id)
+    if artist:
+        new_song.artists.append(artist)
+
+    db.session.add(new_song)
+    db.session.commit()
+    
+    flash(f'單曲《{title}》發行成功！', 'success')
+    return redirect(url_for('admin_dashboard'))
+
 # app.py 更新版 add_album 路由
 
 @app.route('/admin/add_album', methods=['POST'])

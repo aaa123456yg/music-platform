@@ -136,7 +136,14 @@
                         <div class="card-img-placeholder">🎵</div>
                     {% endif %}
                     <h3>{{ album.title }}</h3>
-                    <p>{{ album.release_date.year }} • 專輯</p>
+                    <p>
+                        {{ album.release_date.year }} • 
+                        {% if album.songs|length == 1 %}
+                            單曲
+                        {% else %}
+                            專輯
+                        {% endif %}
+                    </p>
                 </div>
                 {% endfor %}
             </div>

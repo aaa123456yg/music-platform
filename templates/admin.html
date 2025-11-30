@@ -184,6 +184,40 @@
             </form>
         </div>
 
+        <div class="form-section" style="border: 2px solid #1ed760;"> <h2 style="color: #1ed760;">快速發行單曲 (自動建立同名專輯)</h2>
+            <p style="color: #b3b3b3; margin-bottom: 20px;">此功能會自動建立一張與歌名相同的專輯。</p>
+            
+            <form action="/admin/add_single" method="POST" enctype="multipart/form-data">
+                <div class="form-row">
+                    <input type="text" name="title" class="form-control" placeholder="單曲名稱" required>
+                    
+                    <select name="artist_id" class="form-control" required>
+                        <option value="" disabled selected>選擇演出者...</option>
+                        {% for artist in artists %}
+                            <option value="{{ artist.artist_id }}">{{ artist.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <input type="number" name="duration_minutes" class="form-control" placeholder="分" min="0">
+                    <input type="number" name="duration_seconds" class="form-control" placeholder="秒" min="0" max="59">
+                </div>
+
+                <div class="form-row">
+                    <label style="align-self: center; white-space: nowrap;">單曲封面：</label>
+                    <input type="file" name="cover_file" class="form-control" accept="image/*" required>
+                </div>
+
+                <div class="form-row">
+                    <label style="align-self: center; white-space: nowrap;">音檔 (MP3)：</label>
+                    <input type="file" name="audio_file" class="form-control" accept=".mp3, .wav" required>
+                </div>
+
+                <button type="submit" class="btn-primary">發行單曲</button>
+            </form>
+        </div>
+
     </div>
 </body>
 </html>

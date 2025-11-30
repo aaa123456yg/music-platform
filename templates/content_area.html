@@ -64,7 +64,14 @@
                 {% endif %}
                 
                 <h3>{{ album.title }}</h3>
-                <p>{{ album.artist.name }}</p>
+                <p>
+                    {{ album.artist.name }} • 
+                    {% if album.songs|length == 1 %}
+                        單曲
+                    {% else %}
+                        專輯
+                    {% endif %}
+                </p>
             </div>
             {% endfor %}
 
