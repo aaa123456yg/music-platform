@@ -69,7 +69,24 @@
             </h1>
             <p style="color: #b3b3b3; font-size: 0.9rem; margin: 0 0 10px 0;">{{ playlist.description }}</p>
             <div style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 700;">
-                <span style="font-weight: 400;">{{ current_user.display_name }} • {{ song_count }} 首歌曲 • {{ total_duration }}</span>
+                
+                <div class="avatar-circle" style="width: 24px; height: 24px; background-color: #535353;">
+                    <i class="fa-solid fa-user" style="font-size: 0.8rem; color: #b3b3b3;"></i>
+                </div>
+
+                <a href="#" 
+                   hx-get="/user/{{ playlist.user_id }}" 
+                   hx-target="#main-content" 
+                   hx-select="#main-content" 
+                   hx-swap="outerHTML" 
+                   hx-push-url="true"
+                   style="color: #ffffff; text-decoration: none; font-weight: 700;"
+                   onmouseover="this.style.textDecoration='underline'"
+                   onmouseout="this.style.textDecoration='none'">
+                    {{ playlist.owner.display_name }}
+                </a>
+
+                <span style="font-weight: 400; color: #b3b3b3;"> • {{ song_count }} 首歌曲 • {{ total_duration }}</span>
             </div>
         </div>
     </div>
