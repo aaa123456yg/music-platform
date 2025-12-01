@@ -14,10 +14,15 @@ app = Flask(__name__)
 # 設定密鑰 (用於 Session 和 Flash 訊息)，正式上線請改用複雜亂數
 app.config['SECRET_KEY'] = 'your_secret_key_here'
 
-# 設定資料庫連線 (這裡使用 SQLite 方便測試，如果要用 MySQL 請改連線字串)
-# MySQL 範例: 'mysql+pymysql://帳號:密碼@localhost/MusicPlatform'
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost:3306/MusicPlatform' 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:admin123@localhost:5432/MusicPlatform'
+# 嘗試從環境變數取得資料庫網址 (Render 會自動提供 DATABASE_URL)
+database_url = os.environ.get('DATABASE_URL')
+
+# Render 的網址可能是 postgres:// 開頭，但 SQLAlchemy 需要 postgresql://，所以要修正
+if database_url and database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+# 如果有抓到雲端網址就用雲端的，否則用你本機的連線字串 (請確認這裡填的是你本機正確的 PostgreSQL 帳密)
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'postgresql://postgres:admin123@localhost:5432/MusicPlatform'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # 設定上傳存檔路徑
 app.config['UPLOAD_FOLDER'] = os.path.join(app.static_folder, 'music')
