@@ -16,7 +16,8 @@ app.config['SECRET_KEY'] = 'your_secret_key_here'
 
 # 設定資料庫連線 (這裡使用 SQLite 方便測試，如果要用 MySQL 請改連線字串)
 # MySQL 範例: 'mysql+pymysql://帳號:密碼@localhost/MusicPlatform'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost:3306/MusicPlatform' 
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost:3306/MusicPlatform' 
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:admin123@localhost:5432/MusicPlatform'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # 設定上傳存檔路徑
 app.config['UPLOAD_FOLDER'] = os.path.join(app.static_folder, 'music')
@@ -104,7 +105,7 @@ class Album(db.Model):
 
 class Employees(db.Model):
     __tablename__ = 'employees'
-    eId = db.Column(db.String(10), primary_key=True)
+    eid = db.Column(db.String(10), primary_key=True)
     e_name = db.Column(db.String(20), nullable=False)
     e_password = db.Column(db.String(20), nullable=False)
 
@@ -118,7 +119,7 @@ class Song(db.Model):
     album_id = db.Column(db.Integer, db.ForeignKey('albums.album_id'), nullable=False)
     
     # ★★★ 補上這兩行 ★★★
-    eId = db.Column(db.String(10), db.ForeignKey('employees.eId'))
+    eid = db.Column(db.String(10), db.ForeignKey('employees.eid'))
     upload_date = db.Column(db.DateTime, default=datetime.utcnow)
     # ★★★★★★★★★★★★★★★
 
@@ -557,12 +558,12 @@ def admin_login():
         password = request.form.get('password')
         
         # 查詢員工表 (因為是後台，這裡直接明文比對示範，實際專案建議也要加密)
-        employee = Employees.query.filter_by(eId=eid).first()
+        employee = Employees.query.filter_by(eid=eid).first()
         
         if employee and employee.e_password == password:
             # 使用 Session 記住管理員登入狀態 (與一般 User 分開)
             from flask import session
-            session['admin_id'] = employee.eId
+            session['admin_id'] = employee.eid
             return redirect(url_for('admin_dashboard'))
         else:
             flash('管理員帳號或密碼錯誤', 'danger')
@@ -660,7 +661,7 @@ def add_single():
         duration_minutes=duration_m,
         duration_seconds=duration_s,
         audio_file_url=audio_path,
-        eId=session.get('admin_id'),
+        eid=session.get('admin_id'),
         upload_date=datetime.utcnow()
     )
     
@@ -746,7 +747,7 @@ def add_song():
             duration_minutes=duration_m,
             duration_seconds=duration_s,
             audio_file_url=db_path,
-            eId=session['admin_id'], # 記錄是誰上架的
+            eid=session['admin_id'], # 記錄是誰上架的
             upload_date=datetime.utcnow()
         )
         db.session.add(new_song)
