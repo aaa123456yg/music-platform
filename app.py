@@ -6,7 +6,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from sqlalchemy import or_
-
+from sqlalchemy.sql.expression import func
 # 初始化 Flask App
 app = Flask(__name__)
 
@@ -22,7 +22,8 @@ if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
 # 如果有抓到雲端網址就用雲端的，否則用你本機的連線字串 (請確認這裡填的是你本機正確的 PostgreSQL 帳密)
-app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'postgresql://postgres:admin123@localhost:5432/MusicPlatform'
+#app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'postgresql://postgres:admin123@localhost:5432/MusicPlatform'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:admin123@localhost:5432/MusicPlatform'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # 設定上傳存檔路徑
 app.config['UPLOAD_FOLDER'] = os.path.join(app.static_folder, 'music')
@@ -156,13 +157,16 @@ def index():
         # ★★★ 修改這裡：從資料庫撈出真實專輯 ★★★
         # 這裡示範撈出最新的 6 張專輯 (依 album_id 倒序排列)
         recent_albums = Album.query.order_by(Album.album_id.desc()).limit(6).all()
-        
+        random_artists = Artist.query.order_by(func.random()).limit(6).all()
+        if request.headers.get('HX-Request'):
+            # 記得把 artists 傳進去
+            return render_template('content_area.html', albums=recent_albums, artists=random_artists)
         # 也可以順便撈出隨機推薦的演出者 (選用)
         # import random
         # all_artists = Artist.query.all()
         # recommended_artists = random.sample(all_artists, min(len(all_artists), 5))
 
-        return render_template('index.html', albums=recent_albums) 
+        return render_template('index.html', albums=recent_albums, artists=random_artists) 
     else:
         return redirect(url_for('login'))
 

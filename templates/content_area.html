@@ -82,6 +82,31 @@
                 </div>
             {% endif %}
         </div>
+        {% if artists %}
+        <h2 class="welcome-text" style="margin-top: 40px;">熱門藝人</h2>
+        
+        <div class="cards-container">
+            {% for artist in artists %}
+            <div class="card"
+                 hx-get="/artist/{{ artist.artist_id }}"
+                 hx-target="#main-content"  
+                 hx-select="#main-content" 
+                 hx-swap="outerHTML"
+                 hx-push-url="true"
+                 style="cursor: pointer;">
+                 
+                {% if artist.artist_image_url %}
+                    <img src="{{ artist.artist_image_url }}" class="card-img rounded-circle" alt="{{ artist.name }}" style="object-fit: cover;">
+                {% else %}
+                    <div class="card-img-placeholder rounded-circle">🎤</div>
+                {% endif %}
+                
+                <h3>{{ artist.name }}</h3>
+                <p>藝人</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
 </div>
 
