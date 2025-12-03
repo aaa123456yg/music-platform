@@ -27,6 +27,37 @@
     <a href="/admin/dashboard" class="btn-back"><i class="fa-solid fa-arrow-left"></i> 回後台首頁</a>
     
     <h1>內容管理系統</h1>
+    <h2 class="section-title">👥 會員管理</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Email</th>
+                <th>暱稱</th>
+                <th>會員等級</th>
+                <th>註冊日期</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.user_id }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.display_name }}</td>
+                <td>
+                    {% if user.subscription_type == 'Premium' %}
+                        <span style="color: #ffd700; font-weight: bold;">Premium</span>
+                    {% else %}
+                        <span style="color: #b3b3b3;">Free</span>
+                    {% endif %}
+                </td>
+                <td>{{ user.created_at }}</td>
+                <td><a href="/admin/edit/user/{{ user.user_id }}" class="btn-edit" style="background-color: #333; color: white; border: 1px solid #555;">管理</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
     <h2 class="section-title">🎤 藝人管理</h2>
     <table>

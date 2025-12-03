@@ -30,7 +30,25 @@
     </h2>
 
     <form method="POST">
+
+        {% if type == 'user' %}
+        <div class="form-group">
+            <label>Email (唯讀)</label>
+            <input type="text" value="{{ item.email }}" disabled style="opacity: 0.6; cursor: not-allowed;">
+        </div>
+        <div class="form-group">
+            <label>暱稱 (唯讀)</label>
+            <input type="text" value="{{ item.display_name }}" disabled style="opacity: 0.6; cursor: not-allowed;">
+        </div>
         
+        <div class="form-group">
+            <label style="color: #1ed760;">會員等級設定</label>
+            <select name="subscription_type" style="width: 100%; padding: 10px; border-radius: 5px; background-color: #2a2a2a; color: white; border: 1px solid #333;">
+                <option value="Free" {% if item.subscription_type == 'Free' %}selected{% endif %}>Free (免費會員)</option>
+                <option value="Premium" {% if item.subscription_type == 'Premium' %}selected{% endif %}>Premium (付費會員)</option>
+            </select>
+        </div>
+        {% endif %}
         {% if type == 'artist' %}
         <div class="form-group">
             <label>藝人名稱</label>

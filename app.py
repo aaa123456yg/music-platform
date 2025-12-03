@@ -777,8 +777,8 @@ def admin_manage():
     artists = Artist.query.order_by(Artist.artist_id.desc()).all()
     albums = Album.query.order_by(Album.album_id.desc()).all()
     songs = Song.query.order_by(Song.song_id.desc()).all()
-    
-    return render_template('admin_manage.html', artists=artists, albums=albums, songs=songs)
+    users = User.query.order_by(User.user_id.desc()).all()
+    return render_template('admin_manage.html', artists=artists, albums=albums, songs=songs, users=users)
 
 # 2. 編輯藝人
 @app.route('/admin/edit/artist/<int:id>', methods=['GET', 'POST'])
@@ -833,6 +833,22 @@ def edit_song(id):
         return redirect(url_for('admin_manage'))
         
     return render_template('admin_edit.html', type='song', item=song)
+@app.route('/admin/edit/user/<int:id>', methods=['GET', 'POST'])
+def edit_user(id):
+    if 'admin_id' not in session: return redirect(url_for('admin_login'))
+    
+    user = User.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        # 更新會員等級 (Free / Premium)
+        user.subscription_type = request.form['subscription_type']
+        
+        db.session.commit()
+        flash(f'會員 {user.display_name} 的權限已更新為 {user.subscription_type}！', 'success')
+        return redirect(url_for('admin_manage'))
+        
+    return render_template('admin_edit.html', type='user', item=user)
+
 # 6. 後台登出
 @app.route('/admin/logout')
 def admin_logout():
