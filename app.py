@@ -1,6 +1,6 @@
 import os
 from werkzeug.utils import secure_filename
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -767,6 +767,72 @@ def add_song():
 
     return redirect(url_for('admin_dashboard'))
 
+@app.route('/admin/manage')
+def admin_manage():
+    # 檢查是否登入 (假設你用 session['admin_id'] 判斷)
+    if 'admin_id' not in session:
+        return redirect(url_for('admin_login')) # 或是你登入頁面的 function name
+    
+    # 查詢所有資料
+    artists = Artist.query.order_by(Artist.artist_id.desc()).all()
+    albums = Album.query.order_by(Album.album_id.desc()).all()
+    songs = Song.query.order_by(Song.song_id.desc()).all()
+    
+    return render_template('admin_manage.html', artists=artists, albums=albums, songs=songs)
+
+# 2. 編輯藝人
+@app.route('/admin/edit/artist/<int:id>', methods=['GET', 'POST'])
+def edit_artist(id):
+    if 'admin_id' not in session: return redirect(url_for('admin_login'))
+    
+    artist = Artist.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        artist.name = request.form['name']
+        artist.bio = request.form['bio']
+        artist.artist_image_url = request.form['image_url']
+        
+        db.session.commit()
+        flash('藝人資料更新成功！', 'success')
+        return redirect(url_for('admin_manage'))
+        
+    return render_template('admin_edit.html', type='artist', item=artist)
+
+# 3. 編輯專輯
+@app.route('/admin/edit/album/<int:id>', methods=['GET', 'POST'])
+def edit_album(id):
+    if 'admin_id' not in session: return redirect(url_for('admin_login'))
+    
+    album = Album.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        album.title = request.form['title']
+        album.cover_art_url = request.form['cover_url']
+        # 注意：這裡假設你表單送來的日期是字串，如果要嚴謹一點可能要轉 date 物件
+        album.release_date = request.form['release_date'] 
+        
+        db.session.commit()
+        flash('專輯資料更新成功！', 'success')
+        return redirect(url_for('admin_manage'))
+        
+    return render_template('admin_edit.html', type='album', item=album)
+
+# 4. 編輯歌曲
+@app.route('/admin/edit/song/<int:id>', methods=['GET', 'POST'])
+def edit_song(id):
+    if 'admin_id' not in session: return redirect(url_for('admin_login'))
+    
+    song = Song.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        song.title = request.form['title']
+        song.audio_file_url = request.form['audio_url']
+        
+        db.session.commit()
+        flash('歌曲資料更新成功！', 'success')
+        return redirect(url_for('admin_manage'))
+        
+    return render_template('admin_edit.html', type='song', item=song)
 # 6. 後台登出
 @app.route('/admin/logout')
 def admin_logout():
