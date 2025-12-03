@@ -20,9 +20,20 @@
         </div>
 
         <div class="user-menu-container">
-            <button class="user-btn" onclick="toggleDropdown()">
-                <div class="avatar-circle"><i class="fa-solid fa-user"></i></div>
+            <button class="user-btn" onclick="toggleDropdown()" style="background: none; border: none; color: white; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                
+                {% if current_user.subscription_type == 'Premium' %}
+                    <span   style="color: #ffd700; font-size: 0.9rem; font-weight: bold; margin-right: 5px; display: flex; align-items: center;">
+                        PREMIUM 👑
+                    </span>
+                {% endif %}
+
+                <div class="avatar-circle" style="width: 30px; height: 30px; background-color: #535353; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                    
                 <span class="username">{{ current_user.display_name }}</span>
+                    
                 <i class="fa-solid fa-caret-down"></i>
             </button>
             <div id="userDropdown" class="dropdown-content">
