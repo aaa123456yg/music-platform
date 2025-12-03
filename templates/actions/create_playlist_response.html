@@ -13,11 +13,24 @@
 {% if deleted_id %}
 <script>
     (function(){
+        // 取得相關路徑
         var deletedId = "{{ deleted_id }}";
         var currentPath = window.location.pathname;
         var deletedPath = '/playlist/' + deletedId;
+        
+        // 如果使用者正在看這張被刪除的清單
         if (currentPath === deletedPath) {
-            window.location.href = '/';
+            // 嘗試找到側邊欄的「首頁」按鈕 (它已經綁定好 HTMX 不中斷音樂的設定)
+            // 選擇器語法：找到屬性 hx-get="/" 的 a 標籤
+            var homeBtn = document.querySelector('a[hx-get="/"]');
+            
+            if (homeBtn) {
+                // ✅ 模擬點擊：走 HTMX 局部更新，音樂繼續放，畫面切回首頁
+                homeBtn.click();
+            } else {
+                // ⚠️ 萬一找不到按鈕 (保險起見)，只好強制轉址
+                window.location.href = '/';
+            }
         }
     })();
 </script>
