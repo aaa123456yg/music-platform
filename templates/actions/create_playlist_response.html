@@ -4,15 +4,18 @@
     {% include 'partials/playlist_options.html' %}
 </div>
 
+{% if error_message %}
+<script>
+    alert("{{ error_message }}");
+</script>
+{% endif %}
+
 {% if deleted_id %}
 <script>
     (function(){
-        // 加上引號，避免 VS Code 誤判語法錯誤
         var deletedId = "{{ deleted_id }}";
         var currentPath = window.location.pathname;
         var deletedPath = '/playlist/' + deletedId;
-        
-        // 如果使用者正在看這張被刪除的清單，就強制跳回首頁
         if (currentPath === deletedPath) {
             window.location.href = '/';
         }

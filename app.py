@@ -425,6 +425,22 @@ def inject_playlists():
 @app.route('/create_playlist', methods=['POST'])
 @login_required
 def create_playlist():
+    # 1. 檢查 Free 會員限制
+    if current_user.subscription_type == 'Free':
+        user_playlist_count = Playlist.query.filter_by(user_id=current_user.user_id).count()
+        
+        if user_playlist_count >= 3:
+            # ★★★ 修正這裡：不要只回傳 script，要回傳完整的清單模板 ★★★
+            
+            # (A) 重新撈取原本的清單 (確保側邊欄有東西顯示)
+            current_playlists = Playlist.query.filter_by(user_id=current_user.user_id).order_by(Playlist.created_at.desc()).all()
+            
+            # (B) 回傳模板，並多傳一個 error_message
+            return render_template('actions/create_playlist_response.html', 
+                                   my_playlists=current_playlists,
+                                   error_message='免費會員最多只能建立 3 個播放清單，請升級 Premium 解鎖無限建立！')
+
+    # --- 以下是原本的新增邏輯 (保持不變) ---
     name = request.form.get('name')
     description = request.form.get('description')
     is_public = True if request.form.get('is_public') == 'on' else False
@@ -439,10 +455,8 @@ def create_playlist():
         db.session.add(new_playlist)
         db.session.commit()
         
-        # 重新撈取最新資料
+        # 成功建立後，正常回傳更新的列表
         updated_playlists = Playlist.query.filter_by(user_id=current_user.user_id).order_by(Playlist.created_at.desc()).all()
-        
-        # ★★★ 修改這裡：回傳可以同時更新兩個地方的模板 ★★★
         return render_template('actions/create_playlist_response.html', my_playlists=updated_playlists)
         
     return '', 204
