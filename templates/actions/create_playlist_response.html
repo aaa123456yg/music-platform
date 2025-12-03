@@ -1,9 +1,21 @@
 {% include 'partials/playlist_items.html' %}
 
-<div id="playlist-selection-list" 
-     style="max-height: 300px; overflow-y: auto;" 
-     hx-swap-oob="true">
-     
+<div id="playlist-selection-list" style="max-height: 300px; overflow-y: auto;" hx-swap-oob="true">
     {% include 'partials/playlist_options.html' %}
-    
 </div>
+
+{% if deleted_id %}
+<script>
+    (function(){
+        // 加上引號，避免 VS Code 誤判語法錯誤
+        var deletedId = "{{ deleted_id }}";
+        var currentPath = window.location.pathname;
+        var deletedPath = '/playlist/' + deletedId;
+        
+        // 如果使用者正在看這張被刪除的清單，就強制跳回首頁
+        if (currentPath === deletedPath) {
+            window.location.href = '/';
+        }
+    })();
+</script>
+{% endif %}

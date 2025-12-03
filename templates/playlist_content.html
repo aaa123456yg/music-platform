@@ -108,13 +108,18 @@
             <button class="play-btn-large" onclick="playFirstSong()"><i class="fa-solid fa-play"></i></button>
             
             {% if current_user.user_id == playlist.user_id %}
-            <button class="action-icon" 
-                    title="刪除此清單"
-                    hx-delete="/delete_playlist/{{ playlist.playlist_id }}" 
-                    hx-confirm="確定要刪除「{{ playlist.name }}」嗎？此動作無法復原。">
-                <i class="fa-solid fa-trash" style="font-size: 1.5rem;"></i>
-            </button>
-            {% endif %}
+                <button class="action-icon" 
+                        title="刪除此清單"
+                        hx-delete="/delete_playlist/{{ playlist.playlist_id }}" 
+                        hx-confirm="確定要刪除「{{ playlist.name }}」嗎？此動作無法復原。"
+                        hx-target="#user-playlists"
+                        hx-swap="innerHTML"
+                        style="background: none; border: none; cursor: pointer; color: #b3b3b3; margin-left: 10px;"
+                        onmouseover="this.style.color='#ff4d4d'"
+                        onmouseout="this.style.color='#b3b3b3'">
+                    <i class="fa-solid fa-trash" style="font-size: 1.5rem;"></i>
+                </button>
+                {% endif %}
         </div>
 
         <table class="song-table">

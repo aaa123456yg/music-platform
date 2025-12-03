@@ -527,12 +527,13 @@ def delete_playlist(playlist_id):
     db.session.delete(playlist)
     db.session.commit()
     
-    # 特殊指令：告訴 HTMX 刪除成功後，直接「轉址」回首頁
-    # 這樣側邊欄也會跟著刷新，該清單就會消失
-    from flask import make_response
-    resp = make_response()
-    resp.headers['HX-Location'] = '/'
-    return resp
+    # 1. 重新撈取最新的清單
+    updated_playlists = Playlist.query.filter_by(user_id=current_user.user_id).order_by(Playlist.created_at.desc()).all()
+    
+    # 2. 回傳模板，並多傳一個 deleted_id (轉成字串傳比較保險)
+    return render_template('actions/create_playlist_response.html', 
+                           my_playlists=updated_playlists, 
+                           deleted_id=playlist_id)
 
 # app.py - 你的資料庫頁面
 
