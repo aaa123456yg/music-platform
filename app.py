@@ -22,8 +22,9 @@ if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
 # 如果有抓到雲端網址就用雲端的，否則用你本機的連線字串 (請確認這裡填的是你本機正確的 PostgreSQL 帳密)
-app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'postgresql://postgres:admin123@localhost:5432/MusicPlatform'
+#app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'postgresql://postgres:admin123@localhost:5432/MusicPlatform'
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:admin123@localhost:5432/MusicPlatform'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost:3306/MusicPlatform'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # 設定上傳存檔路徑
 app.config['UPLOAD_FOLDER'] = os.path.join(app.static_folder, 'music')
