@@ -402,21 +402,39 @@ function closeAddToPlaylistModal() {
     if (modal) modal.style.display = "none";
     currentSongIdToAdd = null;
 }
-function submitAddToPlaylist(playlistId) {
+function addToPlaylist(playlistId, element) {
     if (!currentSongIdToAdd) {
-        alert("錯誤：找不到歌曲 ID");
-        closeAddToPlaylistModal();
+        console.error("未選擇歌曲");
         return;
     }
-    fetch(`/add_to_playlist/${playlistId}/${currentSongIdToAdd}`, { method: 'POST' })
-    .then(response => {
-        if (response.ok) {
-            closeAddToPlaylistModal();
-            location.reload(); 
-        } else {
-            alert("加入失敗");
-            closeAddToPlaylistModal();
+
+    fetch(`/add_to_playlist/${playlistId}/${currentSongIdToAdd}`, {
+        method: 'POST'
+    })
+    .then(response => response.json()) // ★★★ 改成解析 JSON
+    .then(data => {
+        // 1. 無論有沒有重複，都更新成「資料庫裡的真實數量」
+        if (element) {
+            const countDiv = element.querySelector('.song-count-text');
+            if (countDiv) {
+                countDiv.innerText = data.new_count + " 首歌曲";
+            }
         }
+
+        // 2. 根據後端回傳的 added 狀態決定行為
+        if (data.added) {
+            console.log("加入成功");
+            closeAddToPlaylistModal();
+        } else {
+            // 如果是重複的，雖然數量會更新(保持不變)，但也給個提示
+            alert("這首歌已經在播放清單裡囉！");
+            // 選擇性：重複的話要不要關視窗？通常可以不關，方便他選別張
+            // closeAddToPlaylistModal(); 
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert("發生錯誤，請稍後再試。");
     });
 }
 

@@ -1,14 +1,22 @@
 {% for playlist in my_playlists %}
 <div class="playlist-option" 
-     onclick="submitAddToPlaylist('{{ playlist.playlist_id }}')"
-     style="padding: 12px; border-bottom: 1px solid #333; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+     style="padding: 12px; border-bottom: 1px solid #333; cursor: pointer; display: flex; justify-content: space-between; align-items: center;"
+     onmouseover="this.style.backgroundColor='#333'"
+     onmouseout="this.style.backgroundColor='transparent'"
+     onclick="addToPlaylist('{{ playlist.playlist_id }}')">
     
-    <span>{{ playlist.name }}</span>
+    <div>
+        <span style="font-weight: bold; color: white; display: block;">{{ playlist.name }}</span>
+    </div>
+    
     <i class="fa-solid fa-plus" style="color: #1ed760;"></i>
     
 </div>
 {% endfor %}
 
 {% if not my_playlists %}
-    <p style="color: #b3b3b3; text-align: center;">你還沒有建立任何播放清單</p>
+    <div style="padding: 20px; text-align: center; color: #b3b3b3;">
+        <p>你還沒有建立任何播放清單</p>
+        <p style="font-size: 0.8rem; margin-top: 5px;">去左側建立一個吧！</p>
+    </div>
 {% endif %}

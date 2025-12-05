@@ -1,6 +1,6 @@
 import os
 from werkzeug.utils import secure_filename
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -472,14 +472,20 @@ def add_to_playlist(playlist_id, song_id):
     song = Song.query.get_or_404(song_id)
     
     if not playlist:
-        return "Error", 403
+        return jsonify({'error': 'Permission denied'}), 403
 
+    added = False
+    # 檢查是否重複
     if song not in playlist.songs:
         playlist.songs.append(song)
         db.session.commit()
+        added = True
     
-    # ★★★ 修改這裡：直接回傳 204 (No Content)，代表成功 ★★★
-    return '', 204
+    # ★★★ 修改：簡化回傳內容，只需回傳是否加入成功 ★★★
+    # 前端 JS 只需要知道 'added' 是 True 還是 False 來決定要不要跳 Alert
+    return jsonify({
+        'added': added
+    })
 # app.py
 
 # app.py - 播放清單詳情頁
@@ -515,19 +521,20 @@ def playlist_detail(playlist_id):
 @app.route('/playlist/<int:playlist_id>/remove_song/<int:song_id>', methods=['DELETE'])
 @login_required
 def remove_song_from_playlist(playlist_id, song_id):
-    # 確保是自己的清單
     playlist = Playlist.query.filter_by(playlist_id=playlist_id, user_id=current_user.user_id).first()
+    song = Song.query.get_or_404(song_id)
     
     if not playlist:
-        return "無權限", 403
-    
-    song = Song.query.get(song_id)
-    if song and song in playlist.songs:
+        return "Permission Denied", 403
+        
+    if song in playlist.songs:
         playlist.songs.remove(song)
         db.session.commit()
     
-    # 回傳空字串，HTMX 會把前端對應的那一行 HTML 刪除
-    return '' 
+    # ★★★ 修改：直接回傳空字串 ★★★
+    # 因為你的 playlist_content.html 裡的刪除按鈕是用 hx-target="closest tr"
+    # 回傳空字串 = 把那一整行 tr 內容清空 = 視覺上的刪除
+    return ''
 
 # 2. 刪除整個播放清單
 @app.route('/delete_playlist/<int:playlist_id>', methods=['DELETE'])
